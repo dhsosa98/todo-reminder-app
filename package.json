@@ -1,0 +1,23 @@
+{
+  "name": "ensolvers-challenge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"cd front && npm run dev\" \"cd api && npm run start:dev\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhsosa98/ensolvers-challenge.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dhsosa98/ensolvers-challenge/issues"
+  },
+  "homepage": "https://github.com/dhsosa98/ensolvers-challenge#readme",
+  "dependencies": {
+    "concurrently": "^7.1.0"
+  }
+}
