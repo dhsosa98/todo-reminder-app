@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"cd front && npm run dev\" \"cd api && npm run start:dev\"",
+    "start": "concurrently \"cd front && npm install && npm run dev\" \"cd api && npm install && npm run start:dev\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
