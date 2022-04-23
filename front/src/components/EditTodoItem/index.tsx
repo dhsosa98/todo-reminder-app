@@ -5,9 +5,10 @@ import { getTodoItem, updateTodoItem } from "../../services/TodoItem";
 
 const EditTodoItem: FC = () => {
   const [todoItem, setTodoItem] = useState<ITodoItem>({
-    id: 0,
+    id: -1,
     description: "",
     selected: false,
+    directoryId: -1,
   });
   const navigate = useNavigate();
   const { id } = useParams();

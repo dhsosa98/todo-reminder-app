@@ -39,7 +39,7 @@ const TodoItem: FC<TodoItemProps> = ({ item, handleTodoList }) => {
         onChange={handleChange}
       />
       <button onClick={handleDelete}>Delete</button>
-      <Link to={`/${todoItem.id}`} >Edit</Link>
+      <Link to={`/todoitem/${todoItem.id}`} >Edit</Link>
     </div>
   );
 };
