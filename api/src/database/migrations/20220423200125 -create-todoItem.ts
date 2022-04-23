@@ -19,6 +19,17 @@ module.exports = {
         allowNull: true,
         defaultValue: false,
       },
+      directoryId: {
+        type: Sequelize.DataTypes.INTEGER,
+        onDelete: 'CASCADE',
+        references: {
+          model: {
+            tableName: 'directory',
+          },
+          key: 'id',
+        },
+        allowNull: false,
+      },
     });
   },
 
