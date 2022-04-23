@@ -1,14 +1,16 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import EditTodoItem from './components/EditTodoItem'
-import TodoList from './components/TodoList'
+import Directories from './routes/Directories'
+import Todo from './routes/Todo'
 
 function App() {
 
   return (
     <BrowserRouter>
     <Routes>
-      <Route path='/' element={<TodoList/>} />
-      <Route path='/:id' element={<EditTodoItem/>} />
+      <Route path='/' element={<Directories/>} />
+      <Route path='/:directoryId' element={<Todo/>} />
+      <Route path='todoitem/:id' element={<EditTodoItem/>} />
     </Routes>
     </BrowserRouter>
   )
