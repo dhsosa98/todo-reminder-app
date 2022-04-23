@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TodoItemController } from './controllers/todoItem.controller';
+import { DirectoryModule } from './modules/directory.module';
 import { todoItemModule } from './modules/todoItem.module';
-import { TodoItemProvider } from './providers/todoItem.provider';
-import { TodoItemService } from './services/todoItem.service';
+
 
 @Module({
-  imports: [ConfigModule.forRoot(), todoItemModule],
-  controllers: [TodoItemController],
-  providers: [TodoItemService, ...TodoItemProvider],
+  imports: [ConfigModule.forRoot(), todoItemModule, DirectoryModule],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
