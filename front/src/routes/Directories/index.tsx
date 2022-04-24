@@ -9,6 +9,19 @@ import {
 } from "../../services/directories";
 import styled from "styled-components";
 import NotFound from "../../components/NotFound";
+import Loader from "../../components/Common/Loader";
+import {
+  StyledAddButton,
+  StyledContainer,
+  StyledDeleteButton,
+  StyledEditButton,
+  StyledErrorParagraph,
+  StyledH1,
+  StyledH2,
+  StyledH3,
+  StyledInput,
+  StyledWrapperSection,
+} from "../../components/Common/Styled-components";
 
 const Directories = () => {
   const [directories, setDirectories] = useState<IDirectory[]>([]);
@@ -19,10 +32,13 @@ const Directories = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleDirectories = async () => {
+    try{
     setIsLoading(true);
     const { data } = await getDirectories();
-    setIsLoading(false);
     setDirectories(data);
+  } finally{
+    setIsLoading(false);
+  }
   };
 
   useEffect(() => {
@@ -58,7 +74,7 @@ const Directories = () => {
       <StyledH1>Directories</StyledH1>
       <>
         {isLoading ? (
-          <StyledH3>Loading...</StyledH3>
+          <Loader />
         ) : (
           <>
             {directories.length === 0 && <NotFound title="directory" />}
@@ -69,7 +85,7 @@ const Directories = () => {
                   {directory.name}
                 </StyledH2>
                 <Link to={`/${directory.id}`}>
-                  <StyledDetailsButton>View Details</StyledDetailsButton>
+                  <StyledEditButton>View Details</StyledEditButton>
                 </Link>
                 <StyledDeleteButton onClick={() => handleDelete(directory.id)}>
                   Delete
@@ -79,22 +95,18 @@ const Directories = () => {
           </>
         )}
       </>
-      <StyledWrapper>
+      <StyledWrapperSection>
+        <StyledH3>Add Directory</StyledH3>
+        <StyledWrapper>
         <StyledInput value={newDirectory.name} onChange={handleChange} />
-        <StyledAddButton onClick={handleSubmit}>Add Directory</StyledAddButton>
-      </StyledWrapper>
+        <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
+        </StyledWrapper>
       {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
+      </StyledWrapperSection>
     </StyledContainer>
   );
 };
 export default Directories;
-
-const StyledH3 = styled.h3`
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 1rem;
-`;
 
 const StyledWrapper = styled.div`
   display: flex;
@@ -104,21 +116,6 @@ const StyledWrapper = styled.div`
   margin: 0 auto;
   width: 100%;
   gap: 20px;
-`;
-
-const StyledH2 = styled.h2`
-  color: red;
-`;
-
-const StyledInput = styled.input`
-  height: 40px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 0 10px;
-`;
-
-const StyledH1 = styled.h1`
-  color: red;
 `;
 
 const StyledCard = styled.div`
@@ -131,55 +128,4 @@ const StyledCard = styled.div`
   border-radius: 10px;
   padding: 10px;
   margin: 10px;
-`;
-
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px;
-  font-size: 0.8rem;
-  @media (min-width: 768px) {
-    font-size: 1.2rem;
-  }
-`;
-
-const StyledDetailsButton = styled.button`
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-  background-color: #5290c2;
-  color: white;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-`;
-
-const StyledDeleteButton = styled.button`
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-  background-color: #cd1818;
-  color: white;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-`;
-
-const StyledAddButton = styled.button`
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-  background-color: #5290c2;
-  color: white;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-`;
-
-const StyledErrorParagraph = styled.p`
-  color: red;
 `;

@@ -1,8 +1,7 @@
 import axios from "axios";
 import { ICreateDirectory } from "../interfaces/ICreateDirectory";
-
-import { port } from "../vite-env.d";
-const baseURL = `http://localhost:${port}/directories`;
+import API_URL from "../vite-env.d";
+const baseURL = `${API_URL}/directories`;
 
 export const getDirectories = async () => {
     return await axios.get(baseURL)

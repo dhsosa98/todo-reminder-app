@@ -8,6 +8,18 @@ import { getDirectory } from "../../services/directories";
 import { createTodoItem } from "../../services/TodoItem";
 import styled from "styled-components";
 import NotFound from "../../components/NotFound";
+import Loader from "../../components/Common/Loader";
+import {
+  StyledAddButton,
+  StyledBackButton,
+  StyledContainer,
+  StyledErrorParagraph,
+  StyledH1,
+  StyledH2,
+  StyledH3,
+  StyledInput,
+  StyledWrapperSection,
+} from "../../components/Common/Styled-components";
 
 const Todo: FC = () => {
   const { directoryId } = useParams();
@@ -23,11 +35,14 @@ const Todo: FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleTodoList = async () => {
-    setIsLoading(true);
-    const { data } = await getDirectory(Number(directoryId));
-    setIsLoading(false);
-    setTodoList(data.todoItem);
-    setDirectoryName(data.name);
+    try {
+      setIsLoading(true);
+      const { data } = await getDirectory(Number(directoryId));
+      setTodoList(data.todoItem);
+      setDirectoryName(data.name);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -65,40 +80,43 @@ const Todo: FC = () => {
       <StyledH1>To-do List</StyledH1>
       <>
         {isLoading ? (
-          <StyledH3>Loading...</StyledH3>
+          <Loader />
         ) : (
           <>
             <StyledH2>
               Directories {">"} {directoryName}
             </StyledH2>
-            {todoList.length === 0 && <NotFound title="To-do List" />}
-            {todoList.map((item) => (
-              <TodoItem
-                item={item}
-                handleTodoList={handleTodoList}
-                key={item.id}
-              />
-            ))}
+            <StyledDiv>
+              {todoList.length === 0 && <NotFound title="To-do List" />}
+              {todoList.map((item) => (
+                <TodoItem
+                  item={item}
+                  handleTodoList={handleTodoList}
+                  key={item.id}
+                />
+              ))}
+            </StyledDiv>
           </>
         )}
       </>
-      <StyledInput value={newTodoItem.description} onChange={handleChange} />
-      <StyledFlextContainer>
-        <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
-        <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
-      </StyledFlextContainer>
-      {error && <StyledParagraph>{error}</StyledParagraph>}
+      <StyledWrapperSection>
+        <StyledH3>Add Task</StyledH3>
+        <StyledInput value={newTodoItem.description} onChange={handleChange} />
+        <StyledFlextContainer>
+          <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
+          <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
+        </StyledFlextContainer>
+        {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
+      </StyledWrapperSection>
     </StyledContainer>
   );
 };
 
 export default Todo;
 
-const StyledH3 = styled.h3`
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 1rem;
+const StyledDiv = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const StyledFlextContainer = styled.div`
@@ -106,59 +124,4 @@ const StyledFlextContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;
-`;
-
-const StyledH1 = styled.h1`
-  color: red;
-`;
-const StyledH2 = styled.h2`
-  color: red;
-`;
-
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 10px;
-  font-size: 0.8rem;
-  @media (min-width: 768px) {
-    font-size: 1.2rem;
-  }
-`;
-
-const StyledAddButton = styled.button`
-  background-color: #5290c2;
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-  color: white;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-`;
-
-const StyledBackButton = styled.button`
-  background-color: #c3c2c0;
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-  color: white;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
-`;
-
-const StyledInput = styled.input`
-  height: 40px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 0 10px;
-`;
-
-const StyledParagraph = styled.p`
-  color: red;
 `;
