@@ -57,6 +57,7 @@ const Directories = () => {
     try {
       if (newDirectory.name.length < 3) {
         setError("Please enter a Directory name of at least 3 characters");
+        return;
       }
       await createDirectory(newDirectory);
       handleDirectories();

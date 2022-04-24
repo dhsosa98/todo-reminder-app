@@ -53,7 +53,6 @@ export const StyledContainer = styled.div`
   height: 100%;
   background-color: #f5f5f5;
   border-radius: 10px;
-  padding: 10px;
   font-size: 0.8rem;
   @media (min-width: 768px) {
     font-size: 1.2rem;
