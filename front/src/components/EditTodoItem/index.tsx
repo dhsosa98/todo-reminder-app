@@ -32,6 +32,8 @@ const EditTodoItem: FC = () => {
         setIsLoading(true);
         const response = await getTodoItem(Number(id));
         setTodoItem(response.data);
+      } catch (err: any) {
+        setError("Something went wrong");
       } finally {
         handleDisable();
         setIsLoading(false);
@@ -57,6 +59,8 @@ const EditTodoItem: FC = () => {
       }
       await updateTodoItem(todoItem.id, todoItem);
       navigate(-1);
+    } catch (err: any) {
+      setError("Something went wrong");
     } finally {
       setIsLoading(false);
     }

@@ -3,27 +3,26 @@ import { ITodoItem } from "../../../interfaces/ITodoItem";
 import styled from "styled-components";
 
 interface ToggleProps {
-    item: ITodoItem
-    handleChange: (e: SyntheticEvent<HTMLInputElement>) => void
-    isDisabled: boolean
+  item: ITodoItem;
+  handleChange: (e: SyntheticEvent<HTMLInputElement>) => void;
+  isDisabled: boolean;
 }
 
-
-const Toggle: FC<ToggleProps> = ({item, handleChange, isDisabled}) => {
-    return (
-        <CheckBoxWrapper>
-        <CheckBox
-          id={"imput-selected-" + item.id}
-          disabled={isDisabled}
-          type="checkbox"
-          name="selected"
-          onChange={handleChange}
-          checked={item.selected}
-        />
-        <CheckBoxLabel htmlFor={"imput-selected-" + item.id} />
-      </CheckBoxWrapper>
-    )
-}
+const Toggle: FC<ToggleProps> = ({ item, handleChange, isDisabled }) => {
+  return (
+    <CheckBoxWrapper>
+      <CheckBox
+        id={"imput-selected-" + item.id}
+        disabled={isDisabled}
+        type="checkbox"
+        name="selected"
+        onChange={handleChange}
+        checked={item.selected}
+      />
+      <CheckBoxLabel htmlFor={"imput-selected-" + item.id} />
+    </CheckBoxWrapper>
+  );
+};
 
 export default Toggle;
 
@@ -52,7 +51,7 @@ const CheckBoxLabel = styled.label`
     transition: 0.2s;
   }
   @media (max-width: 768px) {
-       top: 3px;
+    top: 3px;
   }
 `;
 const CheckBox = styled.input`
@@ -73,7 +72,7 @@ const CheckBox = styled.input`
       transition: 0.2s;
     }
   }
-  &:disabled + ${CheckBoxLabel}{
-    cursor: not-allowed; 
+  &:disabled + ${CheckBoxLabel} {
+    cursor: not-allowed;
   }
 `;

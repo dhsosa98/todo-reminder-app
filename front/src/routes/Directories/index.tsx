@@ -32,13 +32,15 @@ const Directories = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleDirectories = async () => {
-    try{
-    setIsLoading(true);
-    const { data } = await getDirectories();
-    setDirectories(data);
-  } finally{
-    setIsLoading(false);
-  }
+    try {
+      setIsLoading(true);
+      const { data } = await getDirectories();
+      setDirectories(data);
+    } catch (err: any) {
+      setError("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -60,13 +62,17 @@ const Directories = () => {
       handleDirectories();
       setNewDirectory({ name: "" });
     } catch (err: any) {
-      console.log({ err });
+      setError("Something went wrong");
     }
   };
 
   const handleDelete = async (id: number) => {
-    await deleteDirectory(id);
-    handleDirectories();
+    try {
+      await deleteDirectory(id);
+      handleDirectories();
+    } catch (err: any) {
+      setError("Something went wrong");
+    }
   };
 
   return (
@@ -98,10 +104,10 @@ const Directories = () => {
       <StyledWrapperSection>
         <StyledH3>Add Directory</StyledH3>
         <StyledWrapper>
-        <StyledInput value={newDirectory.name} onChange={handleChange} />
-        <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
+          <StyledInput value={newDirectory.name} onChange={handleChange} />
+          <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
         </StyledWrapper>
-      {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
+        {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
       </StyledWrapperSection>
     </StyledContainer>
   );

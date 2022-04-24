@@ -4,7 +4,10 @@ import { ITodoItem } from "../../interfaces/ITodoItem";
 import { deleteTodoItem } from "../../services/TodoItem";
 import styled from "styled-components";
 import Toggle from "../Common/Toggle";
-import { StyledDeleteButton, StyledEditButton } from "../Common/Styled-components";
+import {
+  StyledDeleteButton,
+  StyledEditButton,
+} from "../Common/Styled-components";
 
 interface TodoItemProps {
   item: ITodoItem;
@@ -17,12 +20,15 @@ const TodoItem: FC<TodoItemProps> = ({ item, handleTodoList }) => {
   const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
     const { name, value, checked, type } = e.currentTarget;
     setTodoItem({ ...todoItem, [name]: type !== "checkbox" ? value : checked });
-    handleTodoList();
   };
 
   const handleDelete = async () => {
-    await deleteTodoItem(todoItem.id);
-    handleTodoList();
+    try {
+      await deleteTodoItem(todoItem.id);
+      handleTodoList();
+    } catch (err: any) {
+      console.log(err);
+    }
   };
 
   return (

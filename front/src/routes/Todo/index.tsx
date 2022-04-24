@@ -40,6 +40,8 @@ const Todo: FC = () => {
       const { data } = await getDirectory(Number(directoryId));
       setTodoList(data.todoItem);
       setDirectoryName(data.name);
+    } catch (err: any) {
+      setError("Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +64,9 @@ const Todo: FC = () => {
         directoryId: Number(directoryId),
       });
       handleTodoList();
-    } catch (err: any) {}
+    } catch (err: any) {
+      setError("Something went wrong");
+    }
   };
 
   const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
