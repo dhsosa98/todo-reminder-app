@@ -25,7 +25,7 @@ For Windows run the windows.bat file or double click in the file
 $ bat windows.bat
 ```
 
-## Live Demo
+## Live Demo using PostgreSQL
 https://ensolvers-challenge-ds.herokuapp.com/
 
 
