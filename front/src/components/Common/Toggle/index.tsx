@@ -74,5 +74,6 @@ const CheckBox = styled.input`
   }
   &:disabled + ${CheckBoxLabel} {
     cursor: not-allowed;
+    opacity: 0.4;
   }
 `;
