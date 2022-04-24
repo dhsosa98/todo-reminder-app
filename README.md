@@ -9,7 +9,7 @@ This Proyect its made using Vite with React Typescript, React-Router-Dom, Styled
 ## Installation
 
 Note:
-If your local database user credentials not are username=root and password=root. Please create a new .env file in api/.env 
+If your local database user credentials aren't username=root and password=root. Please create a new .env file in api/.env 
 
 ### api/.env
 ```
