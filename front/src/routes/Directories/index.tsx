@@ -87,10 +87,10 @@ const Directories = () => {
             {directories.length === 0 && <NotFound title="directory" />}
             {directories.map((directory) => (
               <StyledCard key={directory.id}>
-                <StyledH2>
+                <StyledH3>
                   {"- "}
                   {directory.name}
-                </StyledH2>
+                </StyledH3>
                 <Link to={`/${directory.id}`}>
                   <StyledEditButton>View Details</StyledEditButton>
                 </Link>
@@ -127,12 +127,12 @@ const StyledWrapper = styled.div`
 
 const StyledCard = styled.div`
   display: flex;
-  gap: 1rem;
+  margin-bottom: 20px;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
+  background-color: white;
+  color: #3a60b7;
   padding: 10px;
-  margin: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
 `;

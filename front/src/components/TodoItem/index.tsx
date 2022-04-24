@@ -7,6 +7,7 @@ import Toggle from "../Common/Toggle";
 import {
   StyledDeleteButton,
   StyledEditButton,
+  StyledH3,
 } from "../Common/Styled-components";
 
 interface TodoItemProps {
@@ -34,8 +35,8 @@ const TodoItem: FC<TodoItemProps> = ({ item, handleTodoList }) => {
   return (
     <StyledCard key={todoItem.id}>
       <StyledWrapper>
-        <h6>Realized</h6>
-        <h6>Description</h6>
+        <StyledH3>Realized</StyledH3>
+        <StyledH3>Description</StyledH3>
         <Toggle item={todoItem} handleChange={handleChange} isDisabled={true} />
         <ContentDescription>{item.description}</ContentDescription>
         <StyledDeleteButton onClick={handleDelete}>Delete</StyledDeleteButton>
@@ -64,7 +65,12 @@ const StyledWrapper = styled.div`
 `;
 
 const StyledCard = styled.div`
-  width: 100%;
+  margin-bottom: 20px;
+  background-color: white;
+  color: #3a60b7;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
 `;
 
 const ContentEdit = styled.div`

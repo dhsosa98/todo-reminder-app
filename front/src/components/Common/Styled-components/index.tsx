@@ -31,11 +31,11 @@ export const StyledErrorParagraph = styled.p`
 `;
 
 export const StyledH1 = styled.h1`
-  color: #3a60b7;
+  color: white;
   text-align: center;
 `;
 export const StyledH2 = styled.h2`
-  color: #3a60b7;
+  color: white;
   text-align: center;
 `;
 
@@ -49,9 +49,6 @@ export const StyledContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: #f5f5f5;
   border-radius: 10px;
   font-size: 0.8rem;
   @media (min-width: 768px) {

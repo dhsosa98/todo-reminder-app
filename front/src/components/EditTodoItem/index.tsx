@@ -119,7 +119,9 @@ const StyledCard = styled.div`
   gap: 10px;
   padding: 10px;
   border-radius: 5px;
-  background: #fafafa;
+  background-color: white;
+  margin: 10px;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
 `;
 
 const StyledContainer = styled.div`

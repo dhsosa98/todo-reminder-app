@@ -1,24 +1,44 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import EditTodoItem from './components/EditTodoItem'
-import Directories from './routes/Directories'
-import Todo from './routes/Todo'
-import styled, {createGlobalStyle} from 'styled-components'
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import EditTodoItem from "./components/EditTodoItem";
+import Directories from "./routes/Directories";
+import Todo from "./routes/Todo";
+import styled, { createGlobalStyle } from "styled-components";
 
 function App() {
-
   return (
     <BrowserRouter>
-    <GlobalStyle/>
-    <Routes>
-      <Route path='/' element={<Directories/>} />
-      <Route path='/:directoryId' element={<Todo/>} />
-      <Route path='todoitem/:id' element={<EditTodoItem/>} />
-    </Routes>
+      <GlobalStyle />
+      <Background />
+      <StyledContainer>
+        <Routes>
+          <Route path="/" element={<Directories />} />
+          <Route path="/:directoryId" element={<Todo />} />
+          <Route path="todoitem/:id" element={<EditTodoItem />} />
+        </Routes>
+      </StyledContainer>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
+
+const StyledContainer = styled.div`
+  display: flex;
+  background-color: transparent;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+`;
+
+const Background = styled.div`
+  background-color: #3d53c5;
+  position: fixed;
+  width: 100vw;
+  height: 55vh;
+  z-index: -1;
+`;
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -29,6 +49,5 @@ const GlobalStyle = createGlobalStyle`
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f5f5f5;
   }
-`
+`;
