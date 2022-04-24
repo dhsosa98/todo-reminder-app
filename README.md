@@ -1,5 +1,5 @@
 # Description
-This is a project made for Ensolvers challenge. The product’s main goal is to help users to create To-Do tasks grouped by folders/directories to improve their organization.
+This is a responsive first project made for Ensolvers challenge. The product’s main goal is to help users to create To-Do tasks grouped by folders/directories to improve their organization.
 
 # How its Made
 This Proyect its made using Vite with React Typescript, React-Router-Dom, Styled-Components, Nestjs, Sequelize ORM and tested with MySQL and PostgreSQL.
