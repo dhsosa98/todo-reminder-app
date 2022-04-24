@@ -2,7 +2,8 @@ import axios from "axios";
 import { ICreateTodoItem } from "../interfaces/ICreateTodoItem";
 import { ITodoItem } from "../interfaces/ITodoItem";
 
-const baseURL = "http://localhost:3001/todoitems";
+import { port } from "../vite-env";
+const baseURL = `http://localhost:${port}/todoitems`;
 
 export const getTodoList = async () => {
   return await axios.get(`${baseURL}`);
