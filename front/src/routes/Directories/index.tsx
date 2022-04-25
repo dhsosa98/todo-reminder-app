@@ -71,7 +71,10 @@ const Directories = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await deleteAlert('Are you sure you want to delete this Directory?', 'The Directory has been deleted Successfully');
+      await deleteAlert(
+        "Are you sure you want to delete this Directory?",
+        "The Directory has been deleted Successfully"
+      );
       await deleteDirectory(id);
       handleDirectories();
     } catch (err: any) {
@@ -87,7 +90,9 @@ const Directories = () => {
           <Loader />
         ) : (
           <>
-            {directories.length === 0 && <NotFound title="directory" />}
+            {directories.length === 0 && (
+              <NotFound title="directory" text="Add one with button below" />
+            )}
             {directories.map((directory) => (
               <StyledCard key={directory.id}>
                 <StyledH3>
@@ -140,14 +145,14 @@ const StyledCard = styled.div`
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   animation: myAnim 0.4s ease-in 0s 1 normal forwards;
   @keyframes myAnim {
-	0% {
-		opacity: 0;
-		transform: translateX(50px);
-	}
+    0% {
+      opacity: 0;
+      transform: translateX(50px);
+    }
 
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 `;

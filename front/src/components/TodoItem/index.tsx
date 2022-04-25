@@ -26,7 +26,10 @@ const TodoItem: FC<TodoItemProps> = ({ item, handleTodoList }) => {
 
   const handleDelete = async () => {
     try {
-      await deleteAlert('Are you sure you want to delete this Task?', 'The task has been deleted!')
+      await deleteAlert(
+        "Are you sure you want to delete this Task?",
+        "The task has been deleted!"
+      );
       await deleteTodoItem(todoItem.id);
       handleTodoList();
     } catch (err: any) {
@@ -75,16 +78,16 @@ const StyledCard = styled.div`
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   animation: myAnim 0.4s ease-in 0s 1 normal forwards;
   @keyframes myAnim {
-	0% {
-		opacity: 0;
-		transform: translateX(50px);
-	}
+    0% {
+      opacity: 0;
+      transform: translateX(50px);
+    }
 
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 `;
 
 const ContentEdit = styled.div`

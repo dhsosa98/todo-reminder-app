@@ -13,7 +13,7 @@ export const StyledAddButton = styled.button`
   }
   &:hover {
     background-color: #106cb8;
-    }
+  }
 `;
 
 export const StyledInput = styled.input`
@@ -85,7 +85,7 @@ export const StyledBackButton = styled.button`
   }
   &:hover {
     background-color: #808080;
-    }
+  }
 `;
 
 export const StyledEditButton = styled.button`
@@ -102,7 +102,7 @@ export const StyledEditButton = styled.button`
   }
   &:hover {
     background-color: #106cb8;
-    }
+  }
 `;
 
 export const StyledDeleteButton = styled.button`
@@ -120,5 +120,5 @@ export const StyledDeleteButton = styled.button`
   }
   &:hover {
     background-color: #860000;
-    }
+  }
 `;

@@ -13,6 +13,7 @@ import {
   StyledInput,
 } from "../Common/Styled-components";
 import { successAlert } from "../../utilities/sweetalert";
+import NotFound from "../NotFound";
 
 const EditTodoItem: FC = () => {
   const [todoItem, setTodoItem] = useState<ITodoItem>({
@@ -34,6 +35,10 @@ const EditTodoItem: FC = () => {
         const response = await getTodoItem(Number(id));
         setTodoItem(response.data);
       } catch (err: any) {
+        if (err.response.status === 404) {
+          setError("Todo item not found");
+          return;
+        }
         setError("Something went wrong");
       } finally {
         handleDisable();
@@ -71,6 +76,14 @@ const EditTodoItem: FC = () => {
   const handleNavigate = () => {
     navigate(-1);
   };
+
+  if (error === "Todo item not found") {
+    return (
+      <StyledContainer>
+        <NotFound title="To-do item with that ID" />"
+      </StyledContainer>
+    );
+  }
 
   return (
     <StyledContainer>
@@ -126,16 +139,16 @@ const StyledCard = styled.div`
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   animation: myAnim 0.4s ease-in 0s 1 normal forwards;
   @keyframes myAnim {
-	0% {
-		opacity: 0;
-		transform: translateY(50px);
-	}
+    0% {
+      opacity: 0;
+      transform: translateY(50px);
+    }
 
-	100% {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 const StyledContainer = styled.div`

@@ -42,6 +42,10 @@ const Todo: FC = () => {
       setTodoList(data.todoItem);
       setDirectoryName(data.name);
     } catch (err: any) {
+      if (err.response.status === 404) {
+        setError("Directory not found");
+        return;
+      }
       setError("Something went wrong");
     } finally {
       setIsLoading(false);
@@ -59,7 +63,7 @@ const Todo: FC = () => {
         return;
       }
       await createTodoItem(newTodoItem);
-      await successAlert("The Task has been Created Successfully"); 
+      await successAlert("The Task has been Created Successfully");
       setNewTodoItem({
         description: "",
         selected: false,
@@ -81,6 +85,14 @@ const Todo: FC = () => {
     navigate(-1);
   };
 
+  if (error === "Directory not found") {
+    return (
+      <StyledCenterContainer>
+        <NotFound title="Directory with that ID" />
+      </StyledCenterContainer>
+    );
+  }
+
   return (
     <StyledContainer>
       <StyledH1>To-do List</StyledH1>
@@ -93,7 +105,9 @@ const Todo: FC = () => {
               Directories {">"} {directoryName}
             </StyledH2>
             <StyledDiv>
-              {todoList.length === 0 && <NotFound title="To-do List" />}
+              {todoList.length === 0 && (
+                <NotFound title="To-do List" text="Add one with button below" />
+              )}
               {todoList.map((item) => (
                 <TodoItem
                   item={item}
@@ -119,6 +133,18 @@ const Todo: FC = () => {
 };
 
 export default Todo;
+
+const StyledCenterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 0.8rem;
+  @media (min-width: 768px) {
+    font-size: 1.2rem;
+  }
+`;
 
 const StyledDiv = styled.div`
   display: flex;

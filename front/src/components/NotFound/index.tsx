@@ -3,13 +3,14 @@ import styled from "styled-components";
 
 interface NotFoundProps {
   title: string;
+  text?: string;
 }
 
-const NotFound: FC<NotFoundProps> = ({ title }) => {
+const NotFound: FC<NotFoundProps> = ({ title, text }) => {
   return (
     <StyledCard>
       <StyledParagraph>Not found any {title}</StyledParagraph>
-      <StyledParagraph>Add one with button below</StyledParagraph>
+      <StyledParagraph>{text}</StyledParagraph>
     </StyledCard>
   );
 };
@@ -23,6 +24,7 @@ const StyledCard = styled.div`
   margin: 10px;
   text-align: center;
   margin-bottom: 30px;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
 `;
 
 const StyledParagraph = styled.p`
