@@ -12,6 +12,7 @@ import {
   StyledH1,
   StyledInput,
 } from "../Common/Styled-components";
+import { successAlert } from "../../utilities/sweetalert";
 
 const EditTodoItem: FC = () => {
   const [todoItem, setTodoItem] = useState<ITodoItem>({
@@ -58,6 +59,7 @@ const EditTodoItem: FC = () => {
         return;
       }
       await updateTodoItem(todoItem.id, todoItem);
+      await successAlert("The Task has been Updated Successfully");
       navigate(-1);
     } catch (err: any) {
       setError("Something went wrong");

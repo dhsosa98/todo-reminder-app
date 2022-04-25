@@ -9,6 +9,7 @@ import {
   StyledEditButton,
   StyledH3,
 } from "../Common/Styled-components";
+import { deleteAlert } from "../../utilities/sweetalert";
 
 interface TodoItemProps {
   item: ITodoItem;
@@ -25,6 +26,7 @@ const TodoItem: FC<TodoItemProps> = ({ item, handleTodoList }) => {
 
   const handleDelete = async () => {
     try {
+      await deleteAlert('Are you sure you want to delete this Task?', 'The task has been deleted!')
       await deleteTodoItem(todoItem.id);
       handleTodoList();
     } catch (err: any) {

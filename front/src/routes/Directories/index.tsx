@@ -22,6 +22,7 @@ import {
   StyledInput,
   StyledWrapperSection,
 } from "../../components/Common/Styled-components";
+import { deleteAlert, successAlert } from "../../utilities/sweetalert";
 
 const Directories = () => {
   const [directories, setDirectories] = useState<IDirectory[]>([]);
@@ -60,6 +61,7 @@ const Directories = () => {
         return;
       }
       await createDirectory(newDirectory);
+      await successAlert("The Directory has been Created Successfully");
       handleDirectories();
       setNewDirectory({ name: "" });
     } catch (err: any) {
@@ -69,6 +71,7 @@ const Directories = () => {
 
   const handleDelete = async (id: number) => {
     try {
+      await deleteAlert('Are you sure you want to delete this Directory?', 'The Directory has been deleted Successfully');
       await deleteDirectory(id);
       handleDirectories();
     } catch (err: any) {

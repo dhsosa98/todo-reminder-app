@@ -20,6 +20,7 @@ import {
   StyledInput,
   StyledWrapperSection,
 } from "../../components/Common/Styled-components";
+import { successAlert } from "../../utilities/sweetalert";
 
 const Todo: FC = () => {
   const { directoryId } = useParams();
@@ -58,6 +59,7 @@ const Todo: FC = () => {
         return;
       }
       await createTodoItem(newTodoItem);
+      await successAlert("The Task has been Created Successfully"); 
       setNewTodoItem({
         description: "",
         selected: false,
