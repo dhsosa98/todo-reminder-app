@@ -11,6 +11,9 @@ export const StyledAddButton = styled.button`
   @media (max-width: 768px) {
     padding: 5px 10px;
   }
+  &:hover {
+    background-color: #106cb8;
+    }
 `;
 
 export const StyledInput = styled.input`
@@ -80,6 +83,9 @@ export const StyledBackButton = styled.button`
   @media (max-width: 768px) {
     padding: 5px 10px;
   }
+  &:hover {
+    background-color: #808080;
+    }
 `;
 
 export const StyledEditButton = styled.button`
@@ -94,6 +100,9 @@ export const StyledEditButton = styled.button`
   @media (max-width: 768px) {
     padding: 5px 10px;
   }
+  &:hover {
+    background-color: #106cb8;
+    }
 `;
 
 export const StyledDeleteButton = styled.button`
@@ -109,4 +118,7 @@ export const StyledDeleteButton = styled.button`
   @media (max-width: 768px) {
     padding: 5px 10px;
   }
+  &:hover {
+    background-color: #860000;
+    }
 `;

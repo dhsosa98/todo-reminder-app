@@ -138,4 +138,16 @@ const StyledCard = styled.div`
   padding: 10px;
   border-radius: 5px;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+  animation: myAnim 0.4s ease-in 0s 1 normal forwards;
+  @keyframes myAnim {
+	0% {
+		opacity: 0;
+		transform: translateX(50px);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
 `;
