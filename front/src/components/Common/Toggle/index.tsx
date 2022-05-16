@@ -1,5 +1,5 @@
 import { FC, SyntheticEvent } from "react";
-import { ITodoItem } from "../../../interfaces/ITodoItem";
+import { ITodoItem } from "../../../interfaces/TodoItem/ITodoItem";
 import styled from "styled-components";
 
 interface ToggleProps {
@@ -12,14 +12,14 @@ const Toggle: FC<ToggleProps> = ({ item, handleChange, isDisabled }) => {
   return (
     <CheckBoxWrapper>
       <CheckBox
-        id={"imput-selected-" + item.id}
+        id={"imput-selected-" + item?.id}
         disabled={isDisabled}
         type="checkbox"
         name="selected"
         onChange={handleChange}
-        checked={item.selected}
+        checked={item?.selected}
       />
-      <CheckBoxLabel htmlFor={"imput-selected-" + item.id} />
+      <CheckBoxLabel htmlFor={"imput-selected-" + item?.id} />
     </CheckBoxWrapper>
   );
 };

@@ -1,7 +1,7 @@
 import { FC, SyntheticEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ITodoItem } from "../../interfaces/ITodoItem";
-import { getTodoItem, updateTodoItem } from "../../services/TodoItem";
+import { ITodoItem } from "../../interfaces/TodoItem/ITodoItem";
+import { todoItemService } from "../../services/TodoItem";
 import styled from "styled-components";
 import Loader from "../Common/Loader";
 import Toggle from "../Common/Toggle";
@@ -12,75 +12,62 @@ import {
   StyledH1,
   StyledInput,
 } from "../Common/Styled-components";
-import { successAlert } from "../../utilities/sweetalert";
 import NotFound from "../NotFound";
+import { useDispatch } from "react-redux";
+import {
+  getTodoItemById,
+  selectTodoItems,
+  setTodoItem,
+  updateTodoItemById,
+} from "../../features/todoItemsSlice";
+import { ActionFromReducer } from "redux";
+import { useSelector } from "react-redux";
+import { resetError } from "../../features/todoItemsSlice";
 
 const EditTodoItem: FC = () => {
-  const [todoItem, setTodoItem] = useState<ITodoItem>({
-    id: -1,
-    description: "",
-    selected: false,
-    directoryId: -1,
-  });
   const navigate = useNavigate();
   const { id } = useParams();
-  const [isDisabled, setIsDisabled] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const dispatch = useDispatch();
+  const { todoItem, error, isLoading } = useSelector(selectTodoItems);
 
   useEffect(() => {
     (async function () {
-      try {
-        setIsLoading(true);
-        const response = await getTodoItem(Number(id));
-        setTodoItem(response.data);
-      } catch (err: any) {
-        if (err.response.status === 404) {
-          setError("Todo item not found");
-          return;
-        }
-        setError("Something went wrong");
-      } finally {
-        handleDisable();
-        setIsLoading(false);
-      }
+      dispatch(getTodoItemById(Number(id)) as ActionFromReducer<ITodoItem>);
     })();
   }, []);
 
   const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
     const { name, value, checked, type } = e.currentTarget;
-    setTodoItem({ ...todoItem, [name]: type !== "checkbox" ? value : checked });
-    setError("");
-  };
-
-  const handleDisable = () => {
-    setIsDisabled(false);
+    dispatch(
+      setTodoItem({
+        ...todoItem,
+        [name]: type === "checkbox" ? checked : value,
+      })
+    );
+    dispatch(resetError());
   };
 
   const handleUpdate = async () => {
-    try {
-      if (todoItem.description.length < 3) {
-        setError("Please enter a description task of at least 3 characters");
-        return;
-      }
-      await updateTodoItem(todoItem.id, todoItem);
-      await successAlert("The Task has been Updated Successfully");
-      navigate(-1);
-    } catch (err: any) {
-      setError("Something went wrong");
-    } finally {
-      setIsLoading(false);
-    }
+    await dispatch(
+      updateTodoItemById({
+        id: Number(id),
+        todoItem,
+      }) as ActionFromReducer<ITodoItem>
+    );
+    handleNavigate();
   };
 
   const handleNavigate = () => {
     navigate(-1);
   };
 
-  if (error === "Todo item not found") {
+  if (error === "Not Found") {
     return (
       <StyledContainer>
-        <NotFound title="To-do item with that ID" />"
+        <StyledH1>Not Found</StyledH1>
+        <NotFound title="To-do item with that ID">
+          <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
+        </NotFound>
       </StyledContainer>
     );
   }
@@ -91,19 +78,14 @@ const EditTodoItem: FC = () => {
         <Loader />
       ) : (
         <>
-          <StyledH1>Editing Task "{todoItem.description}"</StyledH1>
+          <StyledH1>Editing Task "{todoItem?.description}"</StyledH1>
           <StyledCard>
-            <Toggle
-              item={todoItem}
-              handleChange={handleChange}
-              isDisabled={isDisabled}
-            />
             <StyledInput
               name="description"
-              checked={todoItem.selected}
-              value={todoItem.description ? todoItem.description : ""}
+              checked={todoItem?.selected}
+              value={todoItem?.description || ""}
               onChange={handleChange}
-              disabled={isDisabled}
+              disabled={isLoading}
             />
             <StyledWrapper>
               <StyledAddButton onClick={handleUpdate}>Save</StyledAddButton>
@@ -156,7 +138,7 @@ const StyledContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: 70vh;
   font-size: 0.8rem;
   @media (min-width: 768px) {
     font-size: 1.2rem;

@@ -1,7 +1,6 @@
-import { FC, SyntheticEvent, useState } from "react";
+import { FC, SyntheticEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ITodoItem } from "../../interfaces/ITodoItem";
-import { deleteTodoItem } from "../../services/TodoItem";
+import { ITodoItem } from "../../interfaces/TodoItem/ITodoItem";
 import styled from "styled-components";
 import Toggle from "../Common/Toggle";
 import {
@@ -10,43 +9,54 @@ import {
   StyledH3,
 } from "../Common/Styled-components";
 import { deleteAlert } from "../../utilities/sweetalert";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import {
+  deleteTodoItemById,
+  selectTodoItems,
+  setTodoItem,
+  updateSelected,
+  updateTodoItemById,
+} from "../../features/todoItemsSlice";
+import { ActionFromReducer } from "redux";
 
 interface TodoItemProps {
   item: ITodoItem;
-  handleTodoList: () => void;
 }
 
-const TodoItem: FC<TodoItemProps> = ({ item, handleTodoList }) => {
-  const [todoItem, setTodoItem] = useState<ITodoItem>({ ...item });
+const TodoItem: FC<TodoItemProps> = ({ item }) => {
+  const [todoItem, setTodoItem] = useState<ITodoItem>(item);
+  const dispatch = useDispatch();
 
   const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
-    const { name, value, checked, type } = e.currentTarget;
-    setTodoItem({ ...todoItem, [name]: type !== "checkbox" ? value : checked });
+    const { checked } = e.currentTarget;
+    setTodoItem({ ...todoItem, selected: checked });
+    dispatch(
+      updateSelected({
+        ...todoItem,
+        selected: checked,
+      }) as ActionFromReducer<ITodoItem>
+    );
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteAlert(
-        "Are you sure you want to delete this Task?",
-        "The task has been deleted!"
-      );
-      await deleteTodoItem(todoItem.id);
-      handleTodoList();
-    } catch (err: any) {
-      console.log(err);
-    }
+    dispatch(deleteTodoItemById(todoItem?.id) as ActionFromReducer<ITodoItem>);
   };
 
   return (
-    <StyledCard key={todoItem.id}>
+    <StyledCard key={todoItem?.id}>
       <StyledWrapper>
         <StyledH3>Realized</StyledH3>
         <StyledH3>Description</StyledH3>
-        <Toggle item={todoItem} handleChange={handleChange} isDisabled={true} />
-        <ContentDescription>{item.description}</ContentDescription>
+        <Toggle
+          item={todoItem}
+          handleChange={handleChange}
+          isDisabled={false}
+        />
+        <ContentDescription>{item?.description}</ContentDescription>
         <StyledDeleteButton onClick={handleDelete}>Delete</StyledDeleteButton>
         <ContentEdit>
-          <Link to={`/todoitem/${todoItem.id}`}>
+          <Link to={`/todoitem/${todoItem?.id}`}>
             <StyledEditButton>Edit</StyledEditButton>
           </Link>
         </ContentEdit>
