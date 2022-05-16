@@ -33,3 +33,26 @@ export const successAlert = async (title: string, text?: string) =>{
         timer: 1500,
     })
 }
+
+export const infoAlert = async (title: string, text?: string) =>{
+    return await Swal.fire({
+        title: title,
+        text: text,
+        icon: 'info',
+        showCancelButton: false,
+        showConfirmButton: false,
+        timer: 1500,
+    })
+}
+
+export const errorAlert = async (title: string, text?: string) =>{
+    return await Swal.fire({
+        title: title,
+        text: text,
+        icon: 'error',
+        showCancelButton: false,
+        showConfirmButton: false,
+    })
+}
+
+
