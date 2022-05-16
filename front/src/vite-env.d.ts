@@ -3,8 +3,8 @@
 
 export const port = import.meta.env.VITE_API_PORT || 5000;
 const isDev = import.meta.env.DEV;
-let API_URL = ''
+let API_URL = '/';
 if (isDev) {
-    API_URL = `http://localhost:${port}`;
+    API_URL = `http://localhost:${port}/`;
 }
 export default API_URL;
