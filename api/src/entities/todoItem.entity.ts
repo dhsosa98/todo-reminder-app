@@ -6,6 +6,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { Directory } from './directory.entity';
+import { User } from './user.entity';
 
 @Table({ tableName: 'todoitem', timestamps: false })
 export class TodoItem extends Model {
@@ -21,6 +22,10 @@ export class TodoItem extends Model {
   @ForeignKey(() => Directory)
   @Column
   directoryId: number;
+
+  @ForeignKey(() => User)
+  @Column
+  userId: number;
 
   @BelongsTo(() => Directory, {
     onDelete: 'CASCADE',
