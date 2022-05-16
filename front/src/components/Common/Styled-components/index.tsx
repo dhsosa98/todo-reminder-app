@@ -1,3 +1,5 @@
+import { Field, Form } from "formik";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 export const StyledAddButton = styled.button`
@@ -29,8 +31,10 @@ export const StyledInput = styled.input`
 
 export const StyledErrorParagraph = styled.p`
   color: red;
-  text-align: center;
-  font-size: 12px;
+  font-size: 10px;
+  @media (min-width: 768px) {
+    font-size: 12px;
+  }
 `;
 
 export const StyledH1 = styled.h1`
@@ -43,8 +47,14 @@ export const StyledH2 = styled.h2`
 `;
 
 export const StyledH3 = styled.h3`
-  color: #3a60b7;
+  color: #5290c2;
   text-align: center;
+`;
+
+export const StyledH6 = styled(Link)`
+  color: #5290c2;
+  text-align: center;
+  font-size: 12px;
 `;
 
 export const StyledContainer = styled.div`
@@ -56,6 +66,26 @@ export const StyledContainer = styled.div`
   font-size: 0.8rem;
   @media (min-width: 768px) {
     font-size: 1.2rem;
+  }
+`;
+
+export const StyledForm = styled(Form)`
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 10px 10px;
+gap: 12px;
+`;
+
+export const StyledFormikInput = styled(Field)`
+  height: 30px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 0 10px;
+  outline-color: #3a60b7;
+  @media (min-width: 768px) {
+    height: 40px;
   }
 `;
 
