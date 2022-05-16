@@ -7,35 +7,37 @@ import {
   Put,
   Body,
   Param,
+  UseGuards,
+  Request
 } from '@nestjs/common';
 import { TodoItemDto } from 'src/dtos/todoItem.dto';
 
 @Controller('todoitems')
 export class TodoItemController {
   constructor(private todoItemService: TodoItemService) {}
+
   @Get()
-  getTodoItems() {
-    return this.todoItemService.findAll();
+  getTodoItems(@Request() req) {
+    return this.todoItemService.findAll(req.user.userId);
   }
 
   @Get('/:id')
-  getTodoItem(@Param('id') id: number) {
-    return this.todoItemService.findOne(id);
+  getTodoItem(@Request() req, @Param('id') id: number) {
+    return this.todoItemService.findOne(req.user.userId, id);
   }
 
   @Post()
-  createTodoItem(@Body() todoItem: TodoItemDto) {
-    console.log(todoItem);
-    return this.todoItemService.create(todoItem);
+  createTodoItem(@Request() req, @Body() todoItem: TodoItemDto) {
+    return this.todoItemService.create(req.user.userId, todoItem);
   }
 
   @Delete('/:id')
-  deleteTodoItem(@Param('id') id: number) {
-    return this.todoItemService.delete(id);
+  deleteTodoItem(@Request() req, @Param('id') id: number) {
+    return this.todoItemService.delete(req.user.userId, id);
   }
 
   @Put('/:id')
-  updateTodoItem(@Param('id') id: number, @Body() todoItem: TodoItemDto) {
-    return this.todoItemService.update(id, todoItem);
+  updateTodoItem(@Request() req, @Param('id') id: number, @Body() todoItem: TodoItemDto) {
+    return this.todoItemService.update(req.user.userId, id, todoItem);
   }
 }

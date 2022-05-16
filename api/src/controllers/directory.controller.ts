@@ -3,9 +3,10 @@ import {
   Controller,
   Post,
   Delete,
-  Put,
   Body,
   Param,
+  Request,
+  Query,
 } from '@nestjs/common';
 import { DirectoryDto } from 'src/dtos/directory.dto';
 import { DirectoryService } from 'src/services/directory.service';
@@ -15,22 +16,31 @@ export class DirectoryController {
   constructor(private directoriesService: DirectoryService) {}
 
   @Get()
-  getDirectories() {
-    return this.directoriesService.findAll();
+  getDirectories(@Request() req) {
+    return this.directoriesService.findAll(req.user.userId);
   }
 
   @Get(':id')
-  getDirectory(@Param('id') id: number) {
-    return this.directoriesService.findOne(id);
+  getDirectory(@Request() req, @Param('id') id: number) {
+    return this.directoriesService.findOne(req.user.userId, id);
+  }
+
+  @Get(':id/todoitems')
+  getTodoItems(
+    @Request() req,
+    @Param('id') id: number,
+    @Query('search') search: string,
+  ) {
+    return this.directoriesService.findAllTodoItems(req.user.userId, id, search);
   }
 
   @Delete(':id')
-  deleteDirectory(@Param('id') id: number) {
-    return this.directoriesService.delete(id);
+  deleteDirectory(@Request() req, @Param('id') id: number) {
+    return this.directoriesService.delete(req.user.userId, id);
   }
 
   @Post()
-  createDirectory(@Body() directory: DirectoryDto) {
-    return this.directoriesService.create(directory);
+  createDirectory(@Request() req, @Body() directory: DirectoryDto) {
+    return this.directoriesService.create(req.user.userId, directory);
   }
 }
