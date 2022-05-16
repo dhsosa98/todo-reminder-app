@@ -1,36 +1,37 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import EditTodoItem from "./components/EditTodoItem";
-import Directories from "./routes/Directories";
-import Todo from "./routes/Todo";
+import Directories from "./pages/Directories";
+import Todo from "./pages/Todo";
 import styled, { createGlobalStyle } from "styled-components";
+import Login from "./pages/Login";
+import { PrivateRoute } from "./routes/PrivateRoute";
+import SignUp from "./pages/SignUp";
+import { PublicRoute } from "./routes/PublicRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <GlobalStyle />
       <Background />
-      <StyledContainer>
         <Routes>
-          <Route path="/" element={<Directories />} />
-          <Route path="/:directoryId" element={<Todo />} />
-          <Route path="todoitem/:id" element={<EditTodoItem />} />
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Route>
+          <Route element={<PrivateRoute />}>
+            <Route path="/" element={<Navigate to="/directories" />} />
+            <Route path="/directories" element={<Directories />} />
+            <Route path="directories/:directoryId/todoitems" element={<Todo />} />
+            <Route path="todoitem/:id" element={<EditTodoItem />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </StyledContainer>
     </BrowserRouter>
   );
 }
 
 export default App;
 
-const StyledContainer = styled.div`
-  display: flex;
-  background-color: transparent;
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
-`;
 
 const Background = styled.div`
   background-color: #3d53c5;
