@@ -12,6 +12,7 @@ This Proyect its made using Vite with React Typescript, React-Router-Dom, Styled
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "styled-components": "^5.3.5"
+    "sweetalert2": "^11.4.9"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
