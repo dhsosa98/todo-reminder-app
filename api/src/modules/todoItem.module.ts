@@ -8,5 +8,6 @@ import { DatabaseModule } from './db.module';
   imports: [DatabaseModule],
   controllers: [TodoItemController],
   providers: [TodoItemService, ...TodoItemProvider],
+  exports: [TodoItemService],
 })
 export class todoItemModule {}
