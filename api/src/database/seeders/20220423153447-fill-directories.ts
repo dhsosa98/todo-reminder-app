@@ -6,6 +6,7 @@ module.exports = {
       {
         id: 1,
         name: 'Work',
+        userId: 1,
       },
     ]);
   },

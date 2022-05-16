@@ -30,6 +30,17 @@ module.exports = {
         },
         allowNull: false,
       },
+      userId: {
+        type: Sequelize.DataTypes.INTEGER,
+        onDelete: 'CASCADE',
+        references: {
+          model: {
+            tableName: 'user',
+          },
+          key: 'id',
+        },
+        allowNull: false,
+      },
     });
   },
 
