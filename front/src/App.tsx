@@ -21,8 +21,8 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Navigate to="/directories" />} />
             <Route path="/directories" element={<Directories />} />
-            <Route path="directories/:directoryId/todoitems" element={<Todo />} />
-            <Route path="todoitem/:id" element={<EditTodoItem />} />
+            <Route path="/directories/:id" element={<Todo />} />
+            <Route path="/todoitem/:id" element={<EditTodoItem />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

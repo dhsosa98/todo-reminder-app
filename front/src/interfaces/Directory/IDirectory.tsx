@@ -1,4 +1,8 @@
+import { ITodoItem } from "../TodoItem/ITodoItem";
+
 export interface IDirectory{
-    id: number;
+    id?: number;
     name: string;
+    children?: IDirectory[];
+    todoItem?: ITodoItem[];
 }

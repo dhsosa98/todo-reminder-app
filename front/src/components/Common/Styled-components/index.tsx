@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 export const StyledAddButton = styled.button`
-  background-color: #5290c2;
+  background-color: #3d53c5;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   color: white;
   cursor: pointer;
@@ -47,12 +47,12 @@ export const StyledH2 = styled.h2`
 `;
 
 export const StyledH3 = styled.h3`
-  color: #5290c2;
+  color: #3d53c5;
   text-align: center;
 `;
 
 export const StyledH6 = styled(Link)`
-  color: #5290c2;
+  color: #3d53c5;
   text-align: center;
   font-size: 12px;
 `;
@@ -110,16 +110,13 @@ export const StyledBackButton = styled.button`
   padding: 10px 20px;
   border-radius: 5px;
   border: none;
-  @media (max-width: 768px) {
-    padding: 5px 10px;
-  }
   &:hover {
     background-color: #808080;
   }
 `;
 
 export const StyledEditButton = styled.button`
-  background-color: #5290c2;
+  background-color: #3d53c5;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   color: white;
   border-radius: 5px;

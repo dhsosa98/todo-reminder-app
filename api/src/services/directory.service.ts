@@ -14,17 +14,45 @@ export class DirectoryService {
   ) {}
 
   async findAll(userId: number): Promise<Directory[]> {
-    return this.directoryRepository.findAll({ where: { userId } });
+    return this.directoryRepository.findAll({ where: { [Op.and]: [{ userId }, {parentId: null}] } });
   }
 
   async findOne(userId: number, id: number): Promise<Directory> {
     const directory = await this.directoryRepository.findOne({
+      include: [Directory, {
+        model: TodoItem,
+        as: 'todoItem',
+        order: [['order', 'ASC']],
+        separate: true,
+      }],
       where: { [Op.and]: [{ id }, { userId }] },
     });
     if (!directory) {
       throw new NotFoundException(`Directory with id ${id} not found`);
     }
     return directory;
+  }
+
+  async getTree(userId: number, id: number): Promise<any> {
+    let directory = await this.directoryRepository.findOne({
+      where: { [Op.and]: [{ id }, { userId }] },
+    });
+    if (!directory) {
+      throw new NotFoundException(`Directory with id ${id} not found`);
+    }
+    let tree = [];
+    tree.push(directory);
+    while (true) {
+      const parent = await this.directoryRepository.findOne({
+        where: { id: directory.parentId },
+      });
+      if (!parent) {
+        break;
+      }
+      tree.push(parent);
+      directory = parent;
+    }
+    return tree.reverse();
   }
 
   async findAllTodoItems(

@@ -23,18 +23,14 @@ import {
 import { ActionFromReducer } from "redux";
 import { useSelector } from "react-redux";
 import { resetError } from "../../features/todoItemsSlice";
+import useTodoItem from "../../hooks/useTodoItem";
 
 const EditTodoItem: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { todoItem, error, isLoading } = useSelector(selectTodoItems);
 
-  useEffect(() => {
-    (async function () {
-      dispatch(getTodoItemById(Number(id)) as ActionFromReducer<ITodoItem>);
-    })();
-  }, []);
+  const { currentTodoItem: todoItem, error, isLoading } = useTodoItem(Number(id));
 
   const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
     const { name, value, checked, type } = e.currentTarget;

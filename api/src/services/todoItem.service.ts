@@ -1,6 +1,6 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Op } from 'sequelize';
-import { TodoItemDto } from 'src/dtos/todoItem.dto';
+import { TodoItemDto, UpdateToDoItemOrderDto } from 'src/dtos/todoItem.dto';
 import { TodoItem } from 'src/entities/todoItem.entity';
 
 @Injectable()
@@ -20,6 +20,7 @@ export class TodoItemService {
     search: string,
   ): Promise<TodoItem[]> {
     const result = await this.todoItemRepository.findAll<TodoItem>({
+      order: [['order', 'ASC']],
       where: {
         [Op.and]: [
           { directoryId },
@@ -29,6 +30,27 @@ export class TodoItemService {
       },
     });
     return result;
+  }
+
+  async updateOrder(userId: number, todoItems: UpdateToDoItemOrderDto[]): Promise<TodoItem[]> {
+    const promises = todoItems.map(async (todoItem) => {
+      const { id, order } = todoItem;
+      if (order===undefined || !id){
+        throw new BadRequestException('Invalid order or id');
+      }
+
+      const result = await this.todoItemRepository.findOne<TodoItem>({
+        where: { [Op.and]: [{ id }, { userId }] },
+      });
+
+      if (!result) {
+        throw new NotFoundException(`TodoItem with id ${id} not found`);
+      }
+      result.order = order;
+      await result.save();
+      return result;
+    });
+    return Promise.all(promises);
   }
 
   async findOne(userId: number, id: number): Promise<TodoItem> {

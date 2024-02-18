@@ -1,168 +1,94 @@
-import { FC } from "react";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
+import { SyntheticEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import TodoItem from "../../components/TodoItem";
-import { ICreateTodoItem } from "../../interfaces/TodoItem/ICreateTodoItem";
-import { ITodoItem } from "../../interfaces/TodoItem/ITodoItem";
 import styled from "styled-components";
 import NotFound from "../../components/NotFound";
 import Loader from "../../components/Common/Loader";
 import {
-  StyledAddButton,
   StyledBackButton,
   StyledContainer,
-  StyledErrorParagraph,
   StyledH1,
   StyledH2,
-  StyledH3,
-  StyledInput,
-  StyledWrapperSection,
 } from "../../components/Common/Styled-components";
-import { useDispatch } from "react-redux";
-import { ActionFromReducer } from "redux";
-import { useSelector } from "react-redux";
-import {
-  createTodoItemByUser,
-  getTodoItemsByUser,
-  resetError,
-  selectTodoItems,
-  setSearch,
-} from "../../features/todoItemsSlice";
+import TodoItemList from "../../components/TodoItemList";
+import DirectoriesList from "../../components/DirectoriesList";
+import SearchBar from "../../components/SearchBar";
+import AddItem from "../../components/AddItem";
+import useDirectory from "../../hooks/useDirectory";
+import useSearch from "../../hooks/useSearch";
+import BreadCrumb from "../../components/Breadcrumb";
 
 const Todo: FC = () => {
-  const { directoryId } = useParams();
-  const navigate = useNavigate();
-  const initialTodoItem: ICreateTodoItem = {
-    description: "",
-    selected: false,
-    directoryId: Number(directoryId),
-  };
-  const [newTodoItem, setNewTodoItem] =
-    useState<ICreateTodoItem>(initialTodoItem);
-  const dispatch = useDispatch();
-  const { todoList, isLoading, error, directory, search } =
-    useSelector(selectTodoItems);
-  const { name: directoryName } = directory;
-
-  const handleTodoList = async () => {
-    dispatch(
-      getTodoItemsByUser(Number(directoryId)) as ActionFromReducer<ITodoItem[]>
-    );
-  };
+  const { id } = useParams();
 
   useEffect(() => {
-    handleTodoList();
-    return () => {
-      dispatch(resetError());
-    };
-  }, [dispatch, search]);
+    console.log("Todo page");
+  },[]);
 
-  const handleSubmit = async () => {
-    dispatch(createTodoItemByUser(newTodoItem) as ActionFromReducer<ITodoItem>);
-    setNewTodoItem(initialTodoItem);
-  };
+  const navigate = useNavigate();
+  
+  const { search, updateSearch } = useSearch();
 
-  const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
-    const { value } = e.currentTarget;
-    setNewTodoItem({ ...newTodoItem, description: value });
-    dispatch(resetError());
-  };
+  const {currentDirectory, isLoading, error} = useDirectory(Number(id));
+
+  const { children, todoItem } = currentDirectory;
 
   const handleSearch = (e: SyntheticEvent<HTMLInputElement>) => {
     const { value } = e.currentTarget;
-    dispatch(setSearch(value));
+    updateSearch(value);
   };
 
-  const handleNavigate = () => {
-    navigate(-1);
-  };
+  const todoListFiltered = todoItem?.filter((item) => {
+    return item.description.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const subDirectoriesFiltered = children?.filter((item) => {
+    return item.name.toLowerCase().includes(search.toLowerCase());
+  });
+
+
+
+
+
+ 
 
   if (error === "Not Found") {
     return (
       <StyledCenterContainer>
         <StyledH1>Not Found</StyledH1>
         <NotFound title="Directory with that ID">
-          <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
+          <StyledBackButton onClick={()=>{navigate(-1)}}>Back</StyledBackButton>
         </NotFound>
       </StyledCenterContainer>
     );
   }
 
   return (
-    <StyledContainer>
+    <StyledCenterContainer>
       <StyledH1>To-do List</StyledH1>
       <>
-        <StyledH2>
-          Directories {">"} {directoryName}
-        </StyledH2>
-        <StyledWrapperSection>
-          <StyledSearchContainer>
-            <StyledInputSearch
-              placeholder="Search..."
-              value={search}
-              onChange={handleSearch}
-            />
-            <span>🔎</span>
-          </StyledSearchContainer>
-        </StyledWrapperSection>
+        <BreadCrumb />
+        <SearchBar search={search} handleSearch={handleSearch} />
+        <AddItem  />
         {isLoading ? (
           <Loader />
         ) : (
-          <>
             <StyledDiv>
-              {todoList?.length === 0 && (
-                <NotFound title="To-do List" text="Add one with button below" />
-              )}
-              {todoList?.map((item) => (
-                <TodoItem item={item} key={item?.id} />
-              ))}
+              <DirectoriesList directories={subDirectoriesFiltered ?? []} />
+              <TodoItemList todoList={todoListFiltered ?? []} />
             </StyledDiv>
-          </>
         )}
       </>
-      <StyledWrapperSection>
-        <StyledH3>Add Task</StyledH3>
-        <StyledInput
-          placeholder="Go to the shop"
-          value={newTodoItem?.description}
-          onChange={handleChange}
-        />
-        <StyledFlextContainer>
-          <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
-          <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
-        </StyledFlextContainer>
-        {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
-      </StyledWrapperSection>
-    </StyledContainer>
+    </StyledCenterContainer>
   );
 };
 
 export default Todo;
 
-const StyledSearchContainer = styled.div`
-  display: flex;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 5px;
-  align-items: center;
-`;
-
-const StyledInputSearch = styled.input`
-  border: none;
-  border-radius: 5px;
-  padding: 5px;
-  outline: none;
-  font-size: 1.2rem;
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
-`;
-
-const StyledCenterContainer = styled.div`
+const StyledCenterContainer = styled(StyledContainer)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100vh;
   font-size: 0.8rem;
   @media (min-width: 768px) {
     font-size: 1.2rem;
@@ -172,11 +98,4 @@ const StyledCenterContainer = styled.div`
 const StyledDiv = styled.div`
   display: flex;
   flex-direction: column;
-`;
-
-const StyledFlextContainer = styled.div`
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
 `;

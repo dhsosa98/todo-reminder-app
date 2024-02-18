@@ -19,6 +19,10 @@ export class TodoItem extends Model {
   @Column({ defaultValue: false })
   selected: boolean;
 
+
+  @Column({ defaultValue: 0 })
+  order: number;
+
   @ForeignKey(() => Directory)
   @Column
   directoryId: number;

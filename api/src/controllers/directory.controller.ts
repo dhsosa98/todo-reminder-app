@@ -20,6 +20,11 @@ export class DirectoryController {
     return this.directoriesService.findAll(req.user.userId);
   }
 
+  @Get(':id/tree')
+  getTree(@Request() req, @Param('id') id: number) {
+    return this.directoriesService.getTree(req.user.userId, id);
+  }
+
   @Get(':id')
   getDirectory(@Request() req, @Param('id') id: number) {
     return this.directoriesService.findOne(req.user.userId, id);

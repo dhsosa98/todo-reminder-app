@@ -3,12 +3,14 @@ import { Dialect } from 'sequelize/types';
 import { Directory } from 'src/entities/directory.entity';
 import { TodoItem } from 'src/entities/todoItem.entity';
 import { User } from 'src/entities/user.entity';
+import mysql from 'mysql2';
 
 export const DatabaseProviders = [
   {
     provide: 'SEQUELIZE',
     useFactory: async () => {
       const sequelize = new Sequelize({
+        dialectModule: mysql,
         dialect: (process.env.DB_DIALECT as Dialect) || 'mysql',
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '3306'),

@@ -24,11 +24,16 @@ export const getTodoItem = async (id: number) => {
   return await Axios.get(`${baseURL}/${id}`);
 };
 
+export const updateTodoItemOrder = async (todoItems: ITodoItem[]) => {
+  return await Axios.post(`${baseURL}/updateOrder`, todoItems);
+}
+
 export const todoItemService = {
   getTodoList,
   deleteTodoItem,
   updateTodoItem,
   createTodoItem,
-  getTodoItem
+  getTodoItem,
+  updateTodoItemOrder
 };
 

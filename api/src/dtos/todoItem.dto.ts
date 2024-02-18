@@ -11,3 +11,12 @@ export class TodoItemDto {
   @IsNumber()
   directoryId: number;
 }
+
+
+export class UpdateToDoItemOrderDto extends TodoItemDto {
+  @IsNumber()
+  id: number;
+
+  @IsNumber()
+  order: number;
+}
