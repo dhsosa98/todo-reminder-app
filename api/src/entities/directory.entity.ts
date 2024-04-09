@@ -18,7 +18,7 @@ export class Directory extends Model {
   children: Directory[];
 
   @HasMany(() => TodoItem)
-  todoItem: TodoItem;
+  todoItem: TodoItem[];
 
   @BelongsTo(() => User, {
     onDelete: 'CASCADE',

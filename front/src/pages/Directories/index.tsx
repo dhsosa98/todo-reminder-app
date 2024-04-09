@@ -62,7 +62,7 @@ const Directories = () => {
   return (
     <StyledContainer>
       <StyledH1>Directories</StyledH1>
-      <StyledWrapperSection>
+      {/* <StyledWrapperSection>
         <StyledH3>Add Directory</StyledH3>
         <StyledWrapper>
           <StyledInput
@@ -73,7 +73,7 @@ const Directories = () => {
           <StyledAddButton onClick={handleSubmit}>Add</StyledAddButton>
         </StyledWrapper>
         {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
-      </StyledWrapperSection>
+      </StyledWrapperSection> */}
       <>
         {isLoading ? (
           <Loader />
@@ -82,7 +82,7 @@ const Directories = () => {
             {directories?.length === 0 && (
               <NotFound title="directory" text="Add one with button below" />
             )}
-            <DirectoriesList directories={directories} />
+            {/* <DirectoriesList directories={directories} /> */}
           </>
         )}
       </>
@@ -93,6 +93,7 @@ export default Directories;
 
 const StyledWrapper = styled.div`
   display: flex;
+  width: 100%;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;

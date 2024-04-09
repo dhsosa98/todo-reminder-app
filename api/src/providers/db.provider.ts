@@ -4,6 +4,8 @@ import { Directory } from 'src/entities/directory.entity';
 import { TodoItem } from 'src/entities/todoItem.entity';
 import { User } from 'src/entities/user.entity';
 import mysql from 'mysql2';
+import { Device } from 'src/entities/device.entity';
+import { Notification } from 'src/entities/notification.entity';
 
 export const DatabaseProviders = [
   {
@@ -17,8 +19,13 @@ export const DatabaseProviders = [
         username: process.env.DB_USERNAME || 'root',
         password: process.env.DB_PASSWORD || 'root',
         database: process.env.DB_NAME || 'ensolvers-challenge',
+        pool: {
+          max: 3,
+          min: 0,
+          idle: 10000,
+        },
       });
-      sequelize.addModels([TodoItem, Directory, User]);
+      sequelize.addModels([TodoItem, Directory, User, Device, Notification]);
       await sequelize.sync();
       return sequelize;
     },

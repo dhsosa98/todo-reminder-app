@@ -12,6 +12,10 @@ const handleErrors = (err: any, dispatch: any, setError: any) => {
         dispatch(LOGOUT())
         return;
     }
+    if (err.response.data.message) {
+        dispatch(setError(err.response.data.message))
+        return;
+    }
     dispatch(setError("Something went wrong"));
 }
 

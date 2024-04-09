@@ -17,6 +17,7 @@ import { useDispatch } from "react-redux";
 import {
   getTodoItemById,
   selectTodoItems,
+  setNotification,
   setTodoItem,
   updateTodoItemById,
 } from "../../features/todoItemsSlice";
@@ -32,30 +33,95 @@ const EditTodoItem: FC = () => {
 
   const { currentTodoItem: todoItem, error, isLoading } = useTodoItem(Number(id));
 
-  const handleChange = (e: SyntheticEvent<HTMLInputElement>) => {
-    const { name, value, checked, type } = e.currentTarget;
+  const handleChange = (e: SyntheticEvent<any>) => {
+    const { name, type } = e.currentTarget;
+
+    const isNotification = name.includes("notification");
+
+    if (isNotification) {
+      const { notification } = todoItem as ITodoItem;
+      const [key, subKey] = name.split(".");
+
+      dispatch(
+        setNotification({
+          notification: {
+            ...notification,
+            [subKey]: e.currentTarget.value,
+          },
+        })
+      );
+      return;
+    }
+
     dispatch(
       setTodoItem({
         ...todoItem,
-        [name]: type === "checkbox" ? checked : value,
+        [name]: e.currentTarget.value,
       })
     );
+
     dispatch(resetError());
   };
 
+  const handleChangeProviders = (e: SyntheticEvent<any>) => {
+    const { name } = e.currentTarget;
+    const { notification } = todoItem as ITodoItem;
+    const providers = notification?.providers || [];
+    const newProviders = providers.includes(name)
+      ? providers.filter((provider) => provider !== name)
+      : [...providers, name];
+    dispatch(
+      setNotification({
+        notification: {
+          ...notification,
+          providers: newProviders,
+        },
+      })
+    );
+  }
+
+
   const handleUpdate = async () => {
-    await dispatch(
+    dispatch(
       updateTodoItemById({
         id: Number(id),
         todoItem,
       }) as ActionFromReducer<ITodoItem>
     );
-    handleNavigate();
+    dispatch(resetError());
+    // handleNavigate();
   };
 
   const handleNavigate = () => {
     navigate(-1);
   };
+
+  const isSelected = (provider: string) => {
+    return todoItem?.notification?.providers?.includes(provider) || false;
+  }
+
+  const onChecked = (e: SyntheticEvent<HTMLInputElement>) => {
+    const { checked } = e.currentTarget;
+    dispatch(
+      setNotification({
+        notification: {
+          ...todoItem.notification,
+          active: checked,
+        },
+      })
+    );
+  }
+
+  const handleResetProvider = () => {
+    dispatch(
+      setNotification({
+        notification: {
+          ...todoItem.notification,
+          providers: [],
+        },
+      })
+    );
+  }
 
   if (error === "Not Found") {
     return (
@@ -74,21 +140,54 @@ const EditTodoItem: FC = () => {
         <Loader />
       ) : (
         <>
-          <StyledH1>Editing Task "{todoItem?.description}"</StyledH1>
           <StyledCard>
-            <StyledInput
-              name="description"
-              checked={todoItem?.selected}
-              value={todoItem?.description || ""}
-              onChange={handleChange}
-              disabled={isLoading}
-            />
+            <h1>Editing Task {todoItem?.id}</h1>
+            <TaskSection id="task-section">
+              <StyledNotificationText>Task</StyledNotificationText>
+              <label htmlFor="description">Description</label>
+              <StyledDescriptionInput
+                name="description"
+                value={todoItem?.description || ""}
+                disabled={isLoading}
+                rows={5}
+                onChange={handleChange}
+              />
+            </TaskSection>
+            <NotificationSection>
+              <StyledNotificationText>Notification</StyledNotificationText>
+              <div>
+              <label htmlFor="notification.active">Active</label>
+              <input
+                type="checkbox"
+                checked={todoItem?.notification?.active || false}
+                onChange={onChecked}
+              />
+              </div>
+              {todoItem?.notification?.active && 
+              <>
+              <label htmlFor="notification.provider">Provider
+              <StyledResetButton onClick={handleResetProvider}>reset</StyledResetButton>
+              </label>
+              <ProvidersSection>
+                <ProviderButton name="firebase" onClick={handleChangeProviders} selected={isSelected("firebase")}>Firebase</ProviderButton>
+                <TelegramButton name="telegram" onClick={handleChangeProviders} selected={isSelected("telegram")}>Telegram</TelegramButton>
+              </ProvidersSection>
+              <label htmlFor="notification.schedule">Schedule on:</label>
+              <StyledDescriptionInput
+                name="notification.schedule"
+                value={todoItem?.notification?.schedule || ""}
+                onChange={handleChange}
+                disabled={isLoading}
+              />
+              <p style={{ fontSize: "0.6rem", whiteSpace: "pre-wrap" }}>
+                Ex: "every 5 minutes", "every 1 hours", "every 1 days at 13:57", "every 1 weeks at 13:57 on Mon", "every 1 months at 13:57 on each 23 day, every 1 months at 00:01 on the first Mon"
+              </p>
+              </>}
+            </NotificationSection>
             <StyledWrapper>
-              <StyledAddButton onClick={handleUpdate}>Save</StyledAddButton>
-              <StyledBackButton onClick={handleNavigate}>
-                Cancel
-              </StyledBackButton>
-            </StyledWrapper>
+                <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
+                <StyledAddButton onClick={handleUpdate}>Save</StyledAddButton>
+              </StyledWrapper>
           </StyledCard>
           {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
         </>
@@ -97,24 +196,202 @@ const EditTodoItem: FC = () => {
   );
 };
 
-export default EditTodoItem;
+// export default EditTodoItem;
+
+const EditableNotificationSection = () => {
+
+  const {currentTodoItem: todoItem} = useSelector(selectTodoItems);
+
+  const handleChange = (e: SyntheticEvent<any>) => {
+    dispatch(
+      setNotification({
+        notification: {
+          ...todoItem?.notification,
+          [e.currentTarget.name]: e.currentTarget.value,
+        },
+      })
+    );
+  }
+
+  const dispatch = useDispatch();
+
+  const isSelected = (provider: string) => {
+    return todoItem?.notification?.providers?.includes(provider) || false;
+  }
+
+  const onChecked = (e: SyntheticEvent<HTMLInputElement>) => {
+    const { checked } = e.currentTarget;
+    dispatch(
+      setNotification({
+        notification: {
+          ...todoItem?.notification,
+          active: checked,
+        },
+      })
+    );
+  }
+
+  const handleChangeProviders = (e: SyntheticEvent<any>) => {
+    const { name } = e.currentTarget;
+    const { notification } = todoItem as ITodoItem;
+    const providers = notification?.providers || [];
+    const newProviders = providers.includes(name)
+      ? providers.filter((provider) => provider !== name)
+      : [...providers, name];
+    dispatch(
+      setNotification({
+        notification: {
+          ...notification,
+          providers: newProviders,
+        },
+      })
+    );
+  }
+  return (
+    <NotificationSection>
+    <StyledNotificationText>Notification</StyledNotificationText>
+    <div>
+    <label htmlFor="active">Active</label>
+    <input
+      name="active"
+      type="checkbox"
+      checked={todoItem?.notification?.active || false}
+      onChange={onChecked}
+    />
+    </div>
+    {todoItem?.notification?.active && 
+    <>
+      <label htmlFor="provider">Provider
+      {/* <StyledResetButton onClick={handleResetProvider}>reset</StyledResetButton> */}
+      </label>
+      <ProvidersSection>
+        <ProviderButton type="button" name="firebase" onClick={handleChangeProviders} selected={isSelected("firebase")}>Firebase</ProviderButton>
+        <TelegramButton type="button" name="telegram" onClick={handleChangeProviders} selected={isSelected("telegram")}>Telegram</TelegramButton>
+      </ProvidersSection>
+      <label htmlFor="notification.schedule">Schedule on:</label>
+      <StyledDescriptionInput
+        name="schedule"
+        value={todoItem?.notification?.schedule || ""}
+        onChange={handleChange}
+      />
+      <p style={{ fontSize: "0.6rem", whiteSpace: "pre-wrap" }}>
+        Ex: "every 5 minutes", "every 1 hours", "every 1 days at 13:57", "every 1 weeks at 13:57 on Mon", "every 1 months at 13:57 on each 23 day, every 1 months at 00:01 on the first Mon"
+      </p>
+    </>}
+  </NotificationSection>
+  )
+}
+
+export default EditableNotificationSection;
+
+const ProvidersSection = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const StyledResetButton = styled.span`
+  margin-left: 5px;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const StyledInputCheckbox = styled.input`
+  margin-right: 5px;
+`;
+
+const StyledNotificationText = styled.h3`
+  margin: 0;
+  padding: 0;
+`;
+
+const StyledDescriptionInput = styled.textarea`
+  resize: none;
+  border: none;
+  padding: 5px;
+  outline: none;
+  border-bottom: 1px solid #ccc;
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  &:focus {
+    border-color: #3d53c5;
+  }
+`;
+
+const NotificationSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+`;
+
+const TaskSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+`;
+
+const ProviderButton = styled.button<{selected: boolean}>`
+  color: ${(props: any) => (props.selected ? "#ffffff" : "#f2b017")};
+  border: ${(props: any) => (props.selected ? "1px solid #c58f12" : "1px solid #f2b017")};
+  background-color: ${(props: any) => (props.selected ? "#f2b017" : "transparent")};
+  padding: 10px;
+  border-radius: 5px;
+  width: 100px;
+  opacity: ${(props: any) => (props.selected ? 0.5 : 1)};
+  cursor: pointer;
+  &:hover {
+    background-color: #f2b017;
+    color: white;
+  };
+`;
+
+const TelegramButton = styled(ProviderButton)`
+  color: ${(props: any) => (props.selected ? "#ffffff" : "#a917f2")};
+  border: ${(props: any) => (props.selected ? "1px solid #7d3dc5" : "1px solid #a917f2")};
+  background-color: ${(props: any) => (props.selected ? "#a917f2" : "transparent")};
+  padding: 10px;
+  border-radius: 5px;
+  &:hover {
+    background-color: #a917f2;
+    color: white;
+  };
+`;
+
+//   color: ${(props: any) => (props.selected ? "white" : "#f2b017")};
+//   border: ${(props: any) => (props.selected ? "none" : "1px solid #f2b017")};
+//   background-color: transparent;
+//   padding: 10px;
+//   border-radius: 5px;
+//   &:hover {
+//     background-color: #f2b017;
+//     color: white;
+//   };
+// `;
 
 const StyledWrapper = styled.div`
   display: flex;
   gap: 10px;
+  justify-content: flex-end;
+  width: 100%;
 `;
 
 const StyledCard = styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  flex-direction: column;
   justify-content: center;
   gap: 10px;
   padding: 10px;
   border-radius: 5px;
+  font-size: 0.8rem;
   background-color: white;
   margin: 10px;
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
   animation: myAnim 0.4s ease-in 0s 1 normal forwards;
   @keyframes myAnim {
     0% {

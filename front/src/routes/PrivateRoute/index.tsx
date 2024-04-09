@@ -13,7 +13,11 @@ export function PrivateRoute() {
   return isAuthenticated ? (
     <>
       <Header/>
-      <Outlet />
+      <StyledDiv>
+        <Container>
+          <Outlet />
+        </Container>
+      </StyledDiv>
     </>
   ) : (
     <Navigate to="/login" />
@@ -21,7 +25,18 @@ export function PrivateRoute() {
 }
 
 const StyledDiv = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
+`;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 `;

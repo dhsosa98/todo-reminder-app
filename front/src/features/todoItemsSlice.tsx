@@ -13,8 +13,10 @@ export const updateTodoItemOrder = createAsyncThunk<void, ITodoItem[]>(
   "todoItems/updateTodoItemOrder",
   async (todoItems, { dispatch, getState }) => {
     try {
-      const processedTodoItems = todoItems.map((item, index) => {
-        return { ...item, order: index };
+      const storedTodoItems = (getState() as RootState).directory?.currentDirectory?.todoItem ?? [];
+      const processedTodoItems = storedTodoItems.map((todoItem) => {
+        const todoItemOrdered = todoItems.find((item) => item.id === todoItem.id);
+        return todoItemOrdered || todoItem;
       });
       await todoItemService.updateTodoItemOrder(processedTodoItems);
       dispatch(updateTodoItems(processedTodoItems));
@@ -41,7 +43,7 @@ export const createTodoItemByUser = createAsyncThunk<void, ICreateTodoItem>(
       dispatch(setIsLoading(true));
       await todoItemService.createTodoItem(todoItem);
       await successAlert("The TodoItem has been Created Successfully");
-      dispatch(getDirectoryByUser(id));
+      await dispatch(getDirectoryByUser(id));
     } catch (err) {
       handleErrors(err, dispatch, setError);
     } finally {
@@ -61,7 +63,7 @@ export const deleteTodoItemById = createAsyncThunk<void, number>(
       dispatch(setIsLoading(true));
       await todoItemService.deleteTodoItem(id);
       const { id: directoryId } = (getState() as RootState).directory.currentDirectory;
-      dispatch(getDirectoryByUser(directoryId));
+      await dispatch(getDirectoryByUser(directoryId));
     } catch (err) {
       handleErrors(err, dispatch, setError);
     } finally {
@@ -96,8 +98,11 @@ export const updateSelected = createAsyncThunk<void, ITodoItem>(
   "todoItems/updateSelected",
   async (todoItem, { dispatch, getState }) => {
     try {
-      await todoItemService.updateTodoItem(todoItem.id, todoItem);
       dispatch(updateTodoItem(todoItem));
+      const {notification, ...task} = todoItem
+      await todoItemService.updateTodoItem(todoItem.id, task);
+      const { id: directoryId } = (getState() as RootState).directory.currentDirectory;
+      // await dispatch(getDirectoryByUser(directoryId));
     } catch (err) {
       handleErrors(err, dispatch, setError);
     }
@@ -136,21 +141,23 @@ export const getTodoItemById = createAsyncThunk<ITodoItem, number>(
   }
 );
 
+export const initiaTaskslState = {
+  todoList: [] as ITodoItem[],
+  currentTodoItem: null as unknown as ITodoItem,
+  isLoading: false,
+  directory: {
+    id: 0,
+    name: "",
+    children: [],
+    todoItem: [],
+  } as IDirectory,
+  error: "",
+  search: "",
+};
+
 const todoItemsSlice = createSlice({
   name: "todoItems",
-  initialState: {
-    todoList: [] as ITodoItem[],
-    currentTodoItem: {id: 0, selected: false, description: ''} as ITodoItem,
-    isLoading: false,
-    directory: {
-      id: 0,
-      name: "",
-      children: [],
-      todoItem: [],
-    } as IDirectory,
-    error: "",
-    search: "",
-  },
+  initialState: initiaTaskslState,
   reducers: {
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -167,6 +174,12 @@ const todoItemsSlice = createSlice({
     setSearch(state, action: PayloadAction<string>) {
       state.search = action.payload;
     },
+    setNotification: (state, action: PayloadAction<any>) => {
+      if (!state.currentTodoItem) {
+        state.currentTodoItem = {} as ITodoItem;
+      }
+      state.currentTodoItem.notification = action.payload.notification;
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(
@@ -174,7 +187,7 @@ const todoItemsSlice = createSlice({
       (state, action: PayloadAction<ITodoItem>) => {
         state.currentTodoItem = action.payload;
       }
-    );
+    )
   },
 });
 
@@ -183,7 +196,8 @@ export const {
   setError,
   resetError,
   setTodoItem,
-  setSearch
+  setSearch,
+  setNotification,
 } = todoItemsSlice.actions;
 
 export const selectTodoItems = (state: RootState) => state.todoitems;

@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Op } from 'sequelize';
 import { TodoItemDto, UpdateToDoItemOrderDto } from 'src/dtos/todoItem.dto';
+import { Notification } from 'src/entities/notification.entity';
 import { TodoItem } from 'src/entities/todoItem.entity';
 
 @Injectable()
@@ -8,6 +9,8 @@ export class TodoItemService {
   constructor(
     @Inject('TODOITEM_REPOSITORY')
     private todoItemRepository: typeof TodoItem,
+    @Inject('NOTIFICATION_REPOSITORY')
+    private notificationRepository: typeof Notification,
   ) {}
 
   async findAll(userId: number): Promise<TodoItem[]> {
@@ -56,15 +59,28 @@ export class TodoItemService {
   async findOne(userId: number, id: number): Promise<TodoItem> {
     const result = await this.todoItemRepository.findOne<TodoItem>({
       where: { [Op.and]: [{ id }, { userId }] },
-    });
+    });    
     if (!result) {
       throw new NotFoundException(`TodoItem with id ${id} not found`);
     }
+
+    const dbNotification = await this.notificationRepository.findAll<Notification>({
+      where: { taskId: id },
+      attributes: ['active', 'provider', 'schedule'],
+    });
+
+    result.notification = {
+      active: dbNotification[0]?.active || false,
+      providers: dbNotification.map((notification) => notification.provider),
+      schedule: dbNotification[0]?.schedule || '',
+    }
+
     return result;
   }
 
   async create(userId: number, todoItem: TodoItemDto): Promise<TodoItem> {
-    const newTodoItem = new TodoItem({ userId, ...todoItem });
+    const {directoryId, ...rest} = todoItem;
+    const newTodoItem = new TodoItem({ userId, directoryId: directoryId || null, ...rest }, );
     await newTodoItem.save();
     return newTodoItem;
   }
@@ -85,15 +101,15 @@ export class TodoItemService {
     id: number,
     todoItem: TodoItemDto,
   ): Promise<TodoItem> {
-    const { description, selected } = todoItem;
+    // const { description, selected, notification } = todoItem;
     const result = await this.todoItemRepository.findOne<TodoItem>({
       where: { [Op.and]: [{ id }, { userId }] },
     });
     if (!result) {
       throw new NotFoundException(`TodoItem with id ${id} not found`);
     }
-    result.description = description;
-    result.selected = selected;
+    const { directoryId, ...rest } = todoItem;
+    result.update({ userId, directoryId: directoryId || null, ...rest });
     await result.save();
     return result;
   }

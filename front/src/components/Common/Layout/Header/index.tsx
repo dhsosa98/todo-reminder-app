@@ -51,9 +51,10 @@ const Header: FC<any> = ({children}) => {
                 {item}
                 </div>
             ))} */}
-            
             <StyledCloseButton onClick={handleClose}>Logout</StyledCloseButton>
-            <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton>
+            <i className="fi fi-rr-user"></i>
+            <i className="fi fi-rs-bell"></i>
+            {/* <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton> */}
 
             {/* </div> */}
         </StyledHeader>
@@ -62,32 +63,33 @@ const Header: FC<any> = ({children}) => {
 
 export default Header;
 
+const PersonIcon = styled.i`
+    border-radius: 50%;
+    border: 1px solid #ccc;
+`;
+
 
 const StyledCloseButton = styled.button`
     background: none;
     border: none;
     cursor: pointer;
-    padding: 10px 20px;
     font-size: 0.8rem;
-    margin: 10px;
     color: #3d53c5;
     border-radius: 5px;
     border: none;
-    &:hover {
-        background-color: #3d53c5;
-        color: white;
-    }
 `;
 const StyledHeader = styled.header`
     position: sticky;
     display: flex;
     top: 0;
+    z-index: 100;
     align-items: center;
     flex-direction: row-reverse;
     background-color: white;
     box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
     width: 100%;
     height: 75px;
+    gap: 2rem;
 `
 
 const StyledButton = styled.button`

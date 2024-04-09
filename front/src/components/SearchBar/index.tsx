@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { StyledWrapperSection } from "../Common/Styled-components";
-import { FC } from "react";
+import { FC, useRef } from "react";
 
 type SearchBarProps = {
     search: string;
@@ -13,15 +13,20 @@ const WrapperSearchSection = styled(StyledWrapperSection)`
 `;
 
 const SearchBar: FC<SearchBarProps> = ({search, handleSearch}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
     return (
         <WrapperSearchSection>
-          <StyledSearchContainer>
+          <StyledSearchContainer
+          ref={containerRef}
+          >
             <StyledInputSearch
+              onFocus={() => containerRef.current?.classList.add('focused')}
+              onBlur={() => containerRef.current?.classList.remove('focused')}
               placeholder="Search..."
               value={search}
               onChange={handleSearch}
             />
-            <span>🔎</span>
+            <i className="fi fi-rr-search"></i>          
           </StyledSearchContainer>
         </WrapperSearchSection>
     )
@@ -31,10 +36,12 @@ export default SearchBar;
 
 const StyledSearchContainer = styled.div`
   display: flex;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border-bottom: 1px solid #ccc;
   padding: 5px;
   align-items: center;
+  &.focused {
+    border-color: #3d53c5;
+  }
 `;
 
 const StyledInputSearch = styled.input`
