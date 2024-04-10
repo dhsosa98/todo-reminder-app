@@ -168,6 +168,7 @@ const AddItem: FC<AddItemProps> = ({handleClose, type}) => {
           todoItem: {
             ...currentTodoItem,
             description: description,
+            notification: currentTodoItem?.notification,
           },
         }) as ActionFromReducer<IUpdateDirectory>
       );

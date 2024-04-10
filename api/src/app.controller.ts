@@ -6,11 +6,4 @@ import { NotificationService } from "./services/notification.service";
 @Controller()
 export class AppController {
   constructor(private notificationService: NotificationService) {}
-
-    @Public()
-    @Get('sendNotificationToUsers')
-    async sendNotificationToUsers() {
-        await this.notificationService.sendNotificationToUsers();
-        return 'Notification sent to users';
-    }
 }

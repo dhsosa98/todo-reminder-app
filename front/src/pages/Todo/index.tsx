@@ -97,7 +97,7 @@ const Todo: FC = () => {
           <StyledBackButton onClick={()=>{navigate(-1)}}>Back</StyledBackButton>
           <BreadCrumb />
         </Header>
-        <SearchBar search={search} handleSearch={handleSearch} />
+        {/* <SearchBar search={search} handleSearch={handleSearch} /> */}
         {!isLoading && !search && (
           <StyledDiv>
           <h2>Stats</h2>

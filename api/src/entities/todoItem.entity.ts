@@ -15,12 +15,8 @@ import {
 } from 'sequelize-typescript';
 import { Directory } from './directory.entity';
 import { User } from './user.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-
 @Table({ tableName: 'todoitem', timestamps: true })
 export class TodoItem extends Model {
-
-  public static eventEmitter: EventEmitter2;
 
   @Column({ primaryKey: true, autoIncrement: true })
   id: number;
@@ -54,20 +50,5 @@ export class TodoItem extends Model {
 
   set notification(value: any) {
     this.setDataValue('notification', value);
-  }
-
-  @AfterCreate
-  static emitTaskCreatedEvent(instance: TodoItem) {
-    this.eventEmitter.emit('task.created', instance);
-  }
-
-  @AfterUpdate
-  static emitTaskUpdatedEvent(instance: TodoItem) {
-    this.eventEmitter.emit('task.updated', instance);
-  }
-
-  @AfterDestroy
-  static emitTaskDeletedEvent(instance: TodoItem) {
-    this.eventEmitter.emit('task.deleted', instance);
   }
 }

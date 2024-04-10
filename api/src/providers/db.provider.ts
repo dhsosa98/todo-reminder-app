@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import mysql from 'mysql2';
 import { Device } from 'src/entities/device.entity';
 import { Notification } from 'src/entities/notification.entity';
+import { UserNotification } from 'src/entities/userNotification.entity';
 
 export const DatabaseProviders = [
   {
@@ -25,7 +26,7 @@ export const DatabaseProviders = [
           idle: 10000,
         },
       });
-      sequelize.addModels([TodoItem, Directory, User, Device, Notification]);
+      sequelize.addModels([TodoItem, Directory, User, Device, Notification, UserNotification]);
       await sequelize.sync();
       return sequelize;
     },

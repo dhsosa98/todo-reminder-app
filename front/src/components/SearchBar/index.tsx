@@ -10,12 +10,13 @@ type SearchBarProps = {
 const WrapperSearchSection = styled(StyledWrapperSection)`
     display: flex;
     width: 100%;
+    background-color: transparent;
 `;
 
 const SearchBar: FC<SearchBarProps> = ({search, handleSearch}) => {
   const containerRef = useRef<HTMLDivElement>(null);
     return (
-        <WrapperSearchSection>
+        <>
           <StyledSearchContainer
           ref={containerRef}
           >
@@ -28,7 +29,7 @@ const SearchBar: FC<SearchBarProps> = ({search, handleSearch}) => {
             />
             <i className="fi fi-rr-search"></i>          
           </StyledSearchContainer>
-        </WrapperSearchSection>
+        </>
     )
 }   
 
@@ -37,20 +38,27 @@ export default SearchBar;
 const StyledSearchContainer = styled.div`
   display: flex;
   border-bottom: 1px solid #ccc;
-  padding: 5px;
   align-items: center;
+  margin: 0px 2em;
   &.focused {
     border-color: #3d53c5;
   }
+  @media (max-width: 768px) {
+    margin: 0px 1em;
+    font-size: 0.8rem;
+    width: 170px;
+  };
 `;
 
 const StyledInputSearch = styled.input`
   border: none;
   border-radius: 5px;
+  width: 100%;
   padding: 5px;
   outline: none;
-  font-size: 1.2rem;
+  font-size: 1rem;
   @media (max-width: 768px) {
-    font-size: 1rem;
+    font-size: 0.8rem;
+    padding: 3px;
   }
 `;

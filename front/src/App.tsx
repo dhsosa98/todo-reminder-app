@@ -69,7 +69,8 @@ function App() {
     <BrowserRouter>
       <GlobalStyle />
       <ToastContainer />
-      {/* <Background /> */}
+      {/* <Background className="react-flow__background react-flow__container" style={{width: "100%", height: "100%"}}><pattern id="pattern-0" x="3.9787388040956557" y="-7.244748893886367" width="15" height="15" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.5" fill="#EDF0F2"></circle></pattern><rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-0)"></rect></Background> */}
+      <Background />
         <Routes>
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<Login />} />
@@ -92,7 +93,6 @@ export default App;
 
 
 const Background = styled.div`
-  background-color: #3d53c5;
   position: fixed;
   width: 100vw;
   height: 55vh;
@@ -103,7 +103,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
     -webkit-font-smoothing: antialiased;

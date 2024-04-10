@@ -1,4 +1,5 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Op } from 'sequelize';
 import { TodoItemDto, UpdateToDoItemOrderDto } from 'src/dtos/todoItem.dto';
 import { Notification } from 'src/entities/notification.entity';
@@ -11,6 +12,7 @@ export class TodoItemService {
     private todoItemRepository: typeof TodoItem,
     @Inject('NOTIFICATION_REPOSITORY')
     private notificationRepository: typeof Notification,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(userId: number): Promise<TodoItem[]> {
@@ -82,6 +84,7 @@ export class TodoItemService {
     const {directoryId, ...rest} = todoItem;
     const newTodoItem = new TodoItem({ userId, directoryId: directoryId || null, ...rest }, );
     await newTodoItem.save();
+    this.eventEmitter.emit('task.created', newTodoItem);
     return newTodoItem;
   }
 
@@ -93,6 +96,7 @@ export class TodoItemService {
       throw new NotFoundException(`TodoItem with id ${id} not found`);
     }
     await todoItem.destroy();
+    this.eventEmitter.emit('task.deleted', todoItem);
     return todoItem;
   }
 
@@ -101,6 +105,7 @@ export class TodoItemService {
     id: number,
     todoItem: TodoItemDto,
   ): Promise<TodoItem> {
+    console.log('update', todoItem);
     // const { description, selected, notification } = todoItem;
     const result = await this.todoItemRepository.findOne<TodoItem>({
       where: { [Op.and]: [{ id }, { userId }] },
@@ -109,8 +114,10 @@ export class TodoItemService {
       throw new NotFoundException(`TodoItem with id ${id} not found`);
     }
     const { directoryId, ...rest } = todoItem;
-    result.update({ userId, directoryId: directoryId || null, ...rest });
-    await result.save();
+    result.notification = rest.notification;
+    // result.update({ userId, directoryId: directoryId || null, ...rest });
+    // await result.save();
+    this.eventEmitter.emit('task.updated', todoItem);
     return result;
   }
 }

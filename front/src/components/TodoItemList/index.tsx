@@ -250,7 +250,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         </TodosContainer>
         {doneTodos?.length > 0 && (
         <>
-          <h2>Tasks Completed</h2>
+          <h2>Tasks Done</h2>
           <TodosContainer ref={parentDone}>
             {doneTodos?.map((item) => (
               <React.Fragment key={item.id}>

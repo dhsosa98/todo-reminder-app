@@ -222,8 +222,9 @@ const ActionsContainer = styled.div`
 const StyledCard = styled.div<{isDragging: boolean}>`
   display: flex;
   margin-bottom: 20px;
-  width: 100%;
+  width: 200px;
   align-items: center;
+  flex-grow: 1;
   flex-direction: column;
   background-color: ${(props) => (props.isDragging ? "#f2f2f2" : "white")};
   border: ${(props) => (props.isDragging ? "2px dashed #ccc" : "1px solid #ccc")};

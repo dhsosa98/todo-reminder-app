@@ -6,7 +6,6 @@ export const TodoItemProvider: Provider[] = [
   {
     provide: 'TODOITEM_REPOSITORY',
     useFactory: (eventEmitter: EventEmitter2) => {
-      TodoItem.eventEmitter = eventEmitter;
       return TodoItem;
     },
     inject: [EventEmitter2]

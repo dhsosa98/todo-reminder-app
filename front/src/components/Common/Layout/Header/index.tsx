@@ -1,10 +1,48 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { LOGOUT } from "../../../../features/authSlice";
 import { StyledBackButton } from "../../Styled-components";
+import { getNotifications, markAsRead } from "../../../../services/notifications";
+import { IUserNotification } from "../../../../interfaces/User/IUserNotification";
+import useSearch from "../../../../hooks/useSearch";
+import SearchBar from "../../../SearchBar";
 
+const NotificationBadge = styled.div`
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: red;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 10px;
+`;
+
+const NotificationIconWrapper = styled.div`
+  position: relative;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+
+const NotificationIcon = ({ readNotificationsAmount, children, isShowBadge, onClick }: any) => (
+    <NotificationIconWrapper onClick={onClick}>
+      <Icon className="fi fi-rs-bell"></Icon>
+      {readNotificationsAmount > 0 && isShowBadge && (
+        <NotificationBadge>
+          {readNotificationsAmount>9 ? '9+' : readNotificationsAmount}
+        </NotificationBadge>
+      )}
+      {children}
+    </NotificationIconWrapper>
+  );
 
 
 const Header: FC<any> = ({children}) => {
@@ -18,6 +56,9 @@ const Header: FC<any> = ({children}) => {
 
     const navigate = useNavigate();
 
+    const { search, updateSearch } = useSearch();
+
+
     const handleNavigate = () => {
         navigate(-1);
     };
@@ -25,23 +66,71 @@ const Header: FC<any> = ({children}) => {
   const handleClose = () => {
     dispatch(LOGOUT())
   };
-    // const navItems = [
-    //     // <NavLink
-    //     //   to="/"
-    //     // >
-    //     // {({ isActive }) => (
-    //     //   <span>Home</span>
-    //     //   )}
-    //     // </NavLink>,
-    //     <NavLink
-    //       onClick={openHamburgerMenu}
-    //       to="/directories"
-    //     >
-    //       {({ isActive }) => (
-    //       <span>Directories</span>
-    //       )}
-    //     </NavLink>,
-    //   ];
+  const [isOpened, setIsOpened] = useState(false);
+
+  const [notifications, setNotifications] = useState<IUserNotification[]>([]);
+
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: any) {
+      event.stopPropagation();
+      if (menuRef.current && !(menuRef.current as any).contains(event.target)) {
+        setIsOpened(false);
+      }
+    }
+  
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+
+  useEffect(() => {
+    if (isOpened) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  
+    // Clean up function
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+}, [isOpened]);
+
+  const fetchNotifications = async () => {
+    const response = await getNotifications();
+    setNotifications(response.data);
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  },[])
+
+  const readNotifications = notifications.filter((notification) => notification.read === false);
+
+  const onToggleMenu = async (event: any) => {
+    event.stopPropagation();
+    setIsOpened(!isOpened);
+    setTimeout(async () => {
+        await markAsRead(readNotifications.map((notification) => notification.id));
+    }, 1000);
+  }
+
+    const [isOpenedFirstTime, setIsOpenedFirstTime] = useState(false);
+
+    useEffect(() => {
+      if (!isOpenedFirstTime && isOpened) {
+        setIsOpenedFirstTime(true);
+      }
+    }, [isOpenedFirstTime, isOpened]);
+
+
+
+    let readNotificationsAmount = readNotifications.length;
     return (
         <StyledHeader>
             {/* <StyledButton onClick={openHamburgerMenu}>🈯</StyledButton>
@@ -52,8 +141,19 @@ const Header: FC<any> = ({children}) => {
                 </div>
             ))} */}
             <StyledCloseButton onClick={handleClose}>Logout</StyledCloseButton>
-            <i className="fi fi-rr-user"></i>
-            <i className="fi fi-rs-bell"></i>
+            {/* <i className="fi fi-rr-user"></i> */}
+        <NotificationIcon readNotificationsAmount={readNotificationsAmount} isShowBadge={!isOpenedFirstTime} onClick={onToggleMenu} >
+        {isOpened && (
+          <Menu ref={menuRef}>
+            {notifications.map((notification) => {
+                return (
+                    <MenuItem notification={notification} key={notification.id} />
+                )
+            })}
+          </Menu>
+          )}
+        </NotificationIcon>
+        <SearchBar search={search} handleSearch={(e) => updateSearch(e.target.value)} />
             {/* <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton> */}
 
             {/* </div> */}
@@ -62,6 +162,99 @@ const Header: FC<any> = ({children}) => {
 }
 
 export default Header;
+
+
+const MenuItem = ({notification}: any) => {
+    const sendText = new Date(notification.sentAt).toLocaleString('en-US', {
+        weekday: 'short', // represents the day of the week like "Tue"
+        day: '2-digit', // represents the day of the month as two digits
+        month: 'short', // represents the month in three-letter format
+        year: 'numeric', // represents the year as four digits
+        hour: '2-digit', // represents the hour
+        minute: '2-digit', // represents the minute
+      });
+    const [showBadge, setShowBadge] = useState(!notification.read);
+
+    const onMouseEnter = () => {
+        setTimeout(() => {
+            setShowBadge(false);
+        }, 200)
+    }
+
+    return (
+        <MenuItemLi key={notification.id} onMouseEnter={onMouseEnter} read={notification.read} >
+          <div>
+              <p>
+              {notification.notification.title + notification.notification.body}
+              {showBadge && <NewBadge>New</NewBadge>}
+              </p>
+              <h6>{sendText}</h6>
+          </div>
+        </MenuItemLi>
+    )
+}
+
+const NewBadge = styled.span`
+  background-color: #3d53c5;
+  color: white;
+  display: 'inline-block';
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 10px;
+  margin-left: 8px;
+`;
+
+const Icon = styled.i`
+    cursor: pointer;
+    position: relative;
+    &:hover {
+      background-color: #f5f5f5;
+    }
+`;
+
+const MenuItemLi = styled.li<{read: boolean}>`
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  background-color: ${(props) => (props.read ? 'white' : '#f5f5f5')};
+  & p, h6 {
+    margin: 0;
+  }
+`;
+
+const MenuItemDelete = styled(MenuItem)`
+  &:hover {
+    color: red;
+  }
+`;
+
+const Menu = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: absolute;
+  border: 1px solid #ccc;
+  background-color: white;
+  z-index: 100;
+  top: 10px;
+  font-size: 0.8rem;
+  padding: 5px;
+  border-radius: 5px;
+  width: 200px;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+  list-style: none;
+  left: -200px;
+  max-height: 500px;
+  overflow-y: auto;
+  & li:not(:last-child) {
+    border-bottom: 1px solid #ccc;
+  }
+  @media (max-width: 768px) {
+    left: -130px;
+    max-height: 300px;
+  }
+`;
 
 const PersonIcon = styled.i`
     border-radius: 50%;
@@ -77,6 +270,7 @@ const StyledCloseButton = styled.button`
     color: #3d53c5;
     border-radius: 5px;
     border: none;
+    margin-right: 10px;
 `;
 const StyledHeader = styled.header`
     position: sticky;
@@ -89,7 +283,7 @@ const StyledHeader = styled.header`
     box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
     width: 100%;
     height: 75px;
-    gap: 2rem;
+    gap: 1rem;
 `
 
 const StyledButton = styled.button`

@@ -9,6 +9,8 @@ import { ScheduleParserProvider } from "src/providers/scheduleParser.provider";
 import { NotificationsProviderFactory } from "src/providers/NotificationsProviders.factory";
 import { TelegramService } from "src/services/telegram.service";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { UserNotificationProvider } from "src/providers/userNotification.provider.factory";
+import { NotificationController } from "src/controllers/notification.controller";
 
 
 export const telegramConfigProvider: Provider = {
@@ -29,8 +31,9 @@ export const telegramConfigProvider: Provider = {
 
 @Module({
     imports: [AuthModule, FirebaseModule, HttpModule,  ConfigModule.forRoot()],
-    providers: [NotificationService, NotificationsProviderFactory, ...DeviceProvider, ...NotificationProvider, ScheduleParserProvider, TelegramService, telegramConfigProvider],
-    exports: [NotificationService, ...NotificationProvider, NotificationsProviderFactory]
+    controllers: [NotificationController],
+    providers: [NotificationService, NotificationsProviderFactory, ...DeviceProvider, ...NotificationProvider, ...UserNotificationProvider, ScheduleParserProvider, TelegramService, telegramConfigProvider],
+    exports: [NotificationService, ...NotificationProvider, NotificationsProviderFactory, ...UserNotificationProvider]
 })
 export class NotificationsModule {}
 
