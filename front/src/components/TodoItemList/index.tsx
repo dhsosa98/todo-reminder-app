@@ -8,7 +8,7 @@ import { ActionFromReducer } from "redux";
 import { useDragAndDrop } from "@formkit/drag-and-drop/react";
 import { DNDPlugin, addEvents, animations, parents } from "@formkit/drag-and-drop";
 import styled from "styled-components";
-import { selectDirectory, setIsDragging, updateTodoItem, updateTodoItems } from "../../features/directorySlice";
+import { selectDirectory, setIsDragging, setToDirectoryId, updateTodoItem, updateTodoItems } from "../../features/directorySlice";
 import { todoItemService } from "../../services/TodoItem";
 import { useSelector } from "react-redux";
 
@@ -20,7 +20,7 @@ type TodoItemListProps = {
 }
 
 
-const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersContainerRef}) => {
+const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersContainerRef }) => {
 
     const [draggingId, setDraggingId] = useState<number | null>(null);
 
@@ -32,6 +32,8 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
     const taskLefts = todoList?.filter((todo) => !todo.selected);
 
     const taskCompleted = todoList?.filter((todo) => todo.selected);
+
+    const { toDirectoryId, directoriesEl } = useSelector(selectDirectory);
 
     const dispatch = useDispatch();
 
@@ -46,6 +48,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         // Scroll down
         window.scrollBy(0, (clientY - innerHeight) * 0.07);
       } 
+      handleOver(event);
     };
 
     const touchmove = (event: TouchEvent) => {
@@ -59,6 +62,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         // Scroll down
           window.scrollBy(0, 3);
       } 
+      handleOver(event);
     }
 
     useEffect(() => {
@@ -88,6 +92,9 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       if (!parentData) return;
 
       function dragstart(event: DragEvent) {
+        dispatch(
+          setToDirectoryId(undefined)
+        );
         const node = event.target as HTMLElement;
         if (node.id === "no-drag") return;
         if (!node.classList.contains("drag-handle")) return;
@@ -104,6 +111,9 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       }
 
       const touchstart = (event: TouchEvent) => {
+        dispatch(
+          setToDirectoryId(undefined)
+        );
         const node = event.target as HTMLElement;
         if (node.id === "no-drag") return;
         if (!node.classList.contains("drag-handle")) return;
@@ -118,7 +128,12 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         document.querySelectorAll(".drag-image").forEach((node) => {
           node.remove();
         });
-        handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
+        if (event?.dataTransfer?.dropEffect !== 'none') {          
+          handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
+        }
+        dispatch(
+          setToDirectoryId(undefined)
+        );
         setDraggingId(null);
         document.body.style.cursor = "auto";
       }
@@ -150,6 +165,24 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       };
   };
 
+  const handleOver = (e: DragEvent|TouchEvent) => {
+    const node = e.target as HTMLElement;
+    let dropElement: Element | null = null;
+    const nodeData = parents.has(node) ? parents.get(node) : null;
+    console.log({nodeData});
+    if (!nodeData) return;
+    if (e instanceof MouseEvent) {
+      dropElement = document.elementFromPoint(e.clientX, e.clientY);
+    } else if (e instanceof TouchEvent && e.changedTouches.length > 0) {
+      dropElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    }
+    const prevElement = getPrevElement(dropElement as HTMLElement, directoriesEl!);
+    const newDirectoryId = Number(prevElement?.getAttribute("id")?.split("-")[1]);
+    dispatch(
+      setToDirectoryId(newDirectoryId || null)
+    );
+  }
+
   const handleEnd = ({e, targetData, parent}: {e: MouseEvent | TouchEvent, targetData: any, parent: Element}) => {
     const elements = targetData as ITodoItem[];
     const sortedTodos = elements.map((todo, index) => {
@@ -164,7 +197,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
     } else if (e instanceof TouchEvent && e.changedTouches.length > 0) {
       dropElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     }
-    const prevElement = getPrevElement(dropElement as HTMLElement, foldersContainerRef?.current!);
+    const prevElement = getPrevElement(dropElement as HTMLElement, directoriesEl!);
     const node = e.target as HTMLElement;
     const prevElement2 = getPrevElement(node, parent);
     if (!prevElement2) return;

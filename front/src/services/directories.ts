@@ -1,5 +1,6 @@
 import Axios from "../config/axios";
 import { ICreateDirectory } from "../interfaces/Directory/ICreateDirectory";
+import { IDirectory } from "../interfaces/Directory/IDirectory";
 import { IUpdateDirectory } from "../interfaces/Directory/IUpdateDirectory";
 import API_URL from "../vite-env.d";
 const baseURL = `${API_URL}api/directories`;
@@ -36,7 +37,7 @@ const getFullTree = async () => {
     return await Axios.get(`${baseURL}/fullTree`)
 }
 
-const updateDirectory = async (id: number, directory: IUpdateDirectory) => {
+const updateDirectory = async (id: number, directory: Partial<IDirectory>) => {
     return await Axios.post(`${baseURL}/${id}`, directory)
 }
 

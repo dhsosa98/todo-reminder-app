@@ -5,5 +5,5 @@ export interface IDirectory{
     name: string;
     children?: IDirectory[];
     todoItem?: ITodoItem[];
-    parentId?: number;
+    parentId?: number|null;
 }

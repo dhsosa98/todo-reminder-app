@@ -186,7 +186,7 @@ export class DirectoryService {
     if (!updatedDirectory) {
       throw new NotFoundException(`Directory with id ${id} not found`);
     }
-    updatedDirectory.name = directory.name;
+    updatedDirectory.update({...directory});
     await updatedDirectory.save();
     return updatedDirectory;
   }

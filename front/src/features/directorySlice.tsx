@@ -28,12 +28,12 @@ export const getDirectoriesByUser = createAsyncThunk<IDirectory[]>(
   }
 );
 
-export const updateDirectory = createAsyncThunk<void, IUpdateDirectory>(
+export const updateDirectory = createAsyncThunk<void, Partial<IDirectory>>(
   "directories/updateDirectory",
   async (directory, { dispatch }) => {
     try {
       dispatch(setIsLoading(true));
-      await directoryService.updateDirectory(directory.id, directory);
+      await directoryService.updateDirectory(directory.id!, directory);
       await successAlert("The Directory has been Updated Successfully");
       await dispatch(getDirectoryByUser());
     } catch (err) {
@@ -113,6 +113,8 @@ export const initialDirectoryState: {
   error: string;
   isOpenedModal: boolean;
   isDragging: boolean;
+  toDirectoryId: number | null | undefined;
+  directoriesEl: HTMLElement|null;
 } = {
   directories: [],
   isOpenedModal: false,
@@ -124,8 +126,10 @@ export const initialDirectoryState: {
     todoItem: [],
   },
   isDragging: false,
+  toDirectoryId: undefined,
   isLoading: false,
   error: "",
+  directoriesEl: null,
 };
 
 const directorySlice = createSlice({
@@ -168,6 +172,12 @@ const directorySlice = createSlice({
     },
     setIsOpenedModal: (state, action: PayloadAction<boolean>) => {
       state.isOpenedModal = action.payload;
+    },
+    setToDirectoryId: (state, action: PayloadAction<number | null| undefined>) => {
+      state.toDirectoryId = action.payload;
+    },
+    setDirectoriesEl: (state, action: PayloadAction<any>) => {
+      state.directoriesEl = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -188,6 +198,6 @@ const directorySlice = createSlice({
 
 export const selectDirectory = (state: RootState) => state.directory;
 
-export const { setIsLoading, setError, resetError, setCurrentDirectory, updateTodoItem, updateTodoItems, setIsDragging, setIsOpenedModal, setEditableDirectory } = directorySlice.actions;
+export const { setIsLoading, setError, resetError, setToDirectoryId, setCurrentDirectory, updateTodoItem, updateTodoItems, setIsDragging, setIsOpenedModal, setEditableDirectory, setDirectoriesEl } = directorySlice.actions;
 
 export default directorySlice.reducer;

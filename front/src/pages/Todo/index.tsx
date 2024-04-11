@@ -79,7 +79,7 @@ const Todo: FC = () => {
     const scheduledTasks = todoItem?.filter((item) => item.notification?.active);
     const scheduledPercentage = (scheduledTasks!?.length / todoItem!?.length) * 100 || 0;
     setScheduledPercentage(scheduledPercentage);
-  }, [todoItem?.length]);
+  }, [todoItem]);
 
   const foldersContainerRef = useRef<HTMLDivElement>(null);
 
@@ -108,7 +108,7 @@ const Todo: FC = () => {
                 <p><span>{todoItem?.filter((item) => item.selected).length}</span> out of <span>{todoItem?.length}</span> Done</p>
               </StatsTextContainer>
               <div style={{ width: 80, height: 80 }}>
-                <CircularProgressbar minValue={0} value={completedPercentage} text={`${completedPercentage}%`} counterClockwise={true} styles={buildStyles({
+                <CircularProgressbar minValue={0} value={completedPercentage} text={`${completedPercentage.toFixed(2)}%`} counterClockwise={true} styles={buildStyles({
 
                 // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
                 strokeLinecap: 'round',
@@ -135,7 +135,7 @@ const Todo: FC = () => {
                 <p><span>{scheduledTasks?.length}</span> out of <span>{todoItem?.length}</span> Scheduled</p>
               </StatsTextContainer>
               <div style={{ width: 80, height: 80 }}>
-                <CircularProgressbar minValue={0} value={scheduledPercentage} text={`${scheduledPercentage}%`} counterClockwise={true} styles={buildStyles({
+                <CircularProgressbar minValue={0} value={scheduledPercentage} text={`${scheduledPercentage.toFixed(2)}%`} counterClockwise={true} styles={buildStyles({
 
                 // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
                 strokeLinecap: 'round',

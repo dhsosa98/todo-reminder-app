@@ -3,12 +3,15 @@ import { IDirectory } from "../../interfaces/Directory/IDirectory";
 import { StyledDeleteButton, StyledEditButton, StyledH3 } from "../Common/Styled-components";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { deleteDirectoryById, selectDirectory, setEditableDirectory, setIsOpenedModal } from "../../features/directorySlice";
+import { deleteDirectoryById, selectDirectory, setDirectoriesEl, setEditableDirectory, setIsDragging, setIsOpenedModal, setToDirectoryId, updateDirectory } from "../../features/directorySlice";
 import { ActionFromReducer } from "redux";
 import { useDispatch } from "react-redux";
 import NotFound from "../NotFound";
 import { useSelector } from "react-redux";
-
+import dragSrc from '/drag.svg';
+import { ref } from "yup";
+import { DNDPlugin, addEvents, animations, parents } from "@formkit/drag-and-drop";
+import { useDragAndDrop } from "@formkit/drag-and-drop/react";
 
 type DirectoriesListProps = {
     directories: IDirectory[];
@@ -22,7 +25,242 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
 
     const isHome = id === undefined;
 
+  //   const [draggingId, setDraggingId] = useState<number | null>(null);
+
+    const dispatch = useDispatch();
+
     const {currentDirectory} = useSelector(selectDirectory);
+
+    directories = !isHome ? [{
+      id: currentDirectory?.parentId || null as any,
+      name: '../',
+    }, ...directories] : directories;
+
+    function getPrevElement(element: HTMLElement | null, parentNode: Element): Element | null {
+      let prevElement = null;
+      while (element && element !== parentNode) {
+        prevElement = element;
+        element = element.parentElement;
+      }
+      if (element === parentNode) {
+        return prevElement
+      }
+      return null
+    }
+
+  //   const dragStatusPlugin: DNDPlugin = (parent) => {
+
+  //     const parentData = parents.get(parent);
+  //     if (!parentData) return;
+
+  //     function dragstart(event: DragEvent) {
+  //       dispatch(
+  //         setToDirectoryId(null)
+  //       );
+  //       const node = event.target as HTMLElement;
+  //       if (node.id === "no-drag") return;
+  //       if (!node.classList.contains("drag-handle")) return;
+  //       const prevElement = getPrevElement(node, parent);
+  //       if (!prevElement) return;
+  //       const id = Number(prevElement.getAttribute("id")?.split("-")[1]);
+  //       setDraggingId(id);
+  //       const dragImage = prevElement.cloneNode(true) as HTMLElement;
+  //       dragImage.style.width = "200px";
+  //       dragImage.className = "drag-image";
+  //       document.body.appendChild(dragImage);
+  //       event?.dataTransfer?.setDragImage(dragImage, 0, 0);
+  //       document.body.style.cursor = "grabbing";
+  //     }
+
+  //     const touchstart = (event: TouchEvent) => {
+  //       dispatch(
+  //         setToDirectoryId(null)
+  //       );
+  //       const node = event.target as HTMLElement;
+  //       if (node.id === "no-drag") return;
+  //       if (!node.classList.contains("drag-handle")) return;
+  //       const prevElement = getPrevElement(node, parent);
+  //       if (!prevElement) return;
+  //       const id = Number(prevElement.getAttribute("id")?.split("-")[1]);
+  //       setDraggingId(id);
+  //       document.body.style.cursor = "grabbing";
+  //     }
+
+  //     function dragend(event: DragEvent) {
+  //       document.querySelectorAll(".drag-image").forEach((node) => {
+  //         node.remove();
+  //       });
+  //       if (event?.dataTransfer?.dropEffect !== 'none') {          
+  //         // handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
+  //       }
+  //       dispatch(
+  //         setToDirectoryId(null)
+  //       );
+  //       setDraggingId(null);
+  //       document.body.style.cursor = "auto";
+  //     }
+
+  //     const touchend = (event: TouchEvent) => {
+  //       // handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
+  //       setDraggingId(null);
+  //       document.body.style.cursor = "auto";
+  //     }
+
+  //     return {
+  //       setup() {},
+  //       teardown() {},
+  //       setupNode(data) {
+  //         data.nodeData.abortControllers.customPlugin = addEvents(data.node, {
+  //           dragstart: dragstart,
+  //           dragend: dragend,
+  //           touchstart: touchstart,
+  //           touchend: touchend,
+  //         });
+  //       },
+  //       tearDownNode(data) {
+  //         if (data.nodeData?.abortControllers?.customPlugin) {
+  //           data.nodeData?.abortControllers?.customPlugin.abort();
+  //         }
+  //       },
+  //       setupNodeRemap() {},
+  //       tearDownNodeRemap() {},
+  //     };
+
+  // };
+
+  const makeACopy = (e: TouchEvent, targetData: any) => {
+    const node = targetData.node.el;
+    const dragImage = node.cloneNode(true) as HTMLElement;
+    dragImage.classList.add("drag-image");
+    dragImage.style.position = "absolute";
+    dragImage.style.animation = 'none';
+    dragImage.style.inlineSize = node.offsetWidth + "px";
+    document.body.appendChild(dragImage);
+
+    const rect = dragImage.getBoundingClientRect();
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    dragImage.style.top = e.changedTouches[0].clientY + scrollTop - 40  + "px";
+    dragImage.style.left = e.changedTouches[0].clientX + scrollLeft - 20  + "px";
+    document.body.style.cursor = "grabbing";
+  }
+
+  const [ref, dirs, _setValues, updateConfig] = useDragAndDrop<HTMLDivElement, IDirectory>(directories, {
+      group: "directories",
+      sortable: false,
+      dragHandle: ".drag-handle",
+      draggable: (el) => {
+        return el.id !== "no-drag";
+      },  
+      dropZoneClass: "drop-zone",
+      handleDragstart: () => {
+        dispatch(
+          setToDirectoryId(undefined)
+        ); 
+        dispatch(
+          setIsDragging(true)
+        )
+      },
+      handleTouchstart: ({e, targetData}) => {
+        const node = targetData.node.el;
+        const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        if (!fromElem?.classList.contains("drag-handle")) {
+          dispatch(
+            setToDirectoryId(undefined)
+          );
+          return;
+        }
+        // if (node.id === "no-drag") return;
+        makeACopy(e, targetData);
+        dispatch(
+          setToDirectoryId(undefined)
+        );
+        dispatch(
+          setIsDragging(true)
+        )
+      },
+      handleTouchmove: ({e, targetData}) => {
+        e.preventDefault();
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        const dragImage = document.querySelector(".drag-image") as HTMLElement;
+
+        dragImage.style.top = e.changedTouches[0].clientY + scrollTop - 40 + "px";
+        dragImage.style.left = e.changedTouches[0].clientX + scrollLeft - 20 + "px";
+        dragImage.style.pointerEvents = "none";
+
+        const toElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        const el = getPrevElement(toElement as HTMLElement, targetData.parent.el);
+        const toId = targetData.parent.data.enabledNodes.find((node) => node.el === el)?.data.value.id;
+        if (toId===undefined) return;
+        if (toId === targetData.node.data.value.id) return;
+        dispatch(
+          setToDirectoryId(toId || null)
+        );
+      },
+      handleTouchOverNode: (data) => {
+        const toId = data.detail.targetData.node.data.value.id;
+        if (toId===undefined) return;
+        dispatch(
+          setToDirectoryId(toId)
+        );
+      },
+      handleDragoverNode({e, targetData}) {
+        const toId = targetData.node.data.value.id;
+        if (toId===undefined) return;
+        dispatch(
+          setToDirectoryId(toId || null)
+        );
+      },
+      handleEnd: ({e, targetData}) => {
+        document.querySelectorAll(".drag-image").forEach((node) => {
+          node.remove();
+        });
+        dispatch(
+          setIsDragging(false)
+        );
+        dispatch(
+          setToDirectoryId(undefined)
+        );
+        let dropElement: Element | null = null;
+        const parent = targetData.parent.el;
+        if (e instanceof MouseEvent) {
+          const isNone = e?.dataTransfer?.dropEffect === 'none'
+          if (isNone) return;
+        }
+        if (e instanceof MouseEvent) {
+          dropElement = document.elementFromPoint(e.clientX, e.clientY);
+        } else if (e instanceof TouchEvent && e.changedTouches.length > 0) {
+          dropElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        }
+        const toElement = getPrevElement(dropElement as HTMLElement, parent);
+        if (!toElement) return;
+        const toId = targetData.parent.data.enabledNodes.find((node) => node.el === toElement)?.data.value.id;
+        const fromId = targetData.node.data.value.id;
+        if (toId===undefined || !fromId || toId === fromId) return;
+        dispatch(
+          updateDirectory({
+            id: fromId,
+            parentId: toId || null,
+          }) as ActionFromReducer<Partial<IDirectory>>
+        )
+      },
+      plugins: [
+        animations(),
+      ]
+    })
+
+    useEffect(() => {
+      dispatch(
+        setDirectoriesEl(ref.current)
+      );
+    }, [ref.current]);
+
+    useEffect(() => {
+      _setValues(directories);
+    }, [directories.length]);
 
     return (
         <DirectoriesContainer>
@@ -30,23 +268,12 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         {/* {directories?.length === 0 && (
             <NotFound title="Directory" text="Add one with button below" />
         )} */}
-        <TodosContainer ref={foldersContainerRef}>
-          <StyledCard isDragging={false} onClick={() => handleAddItem('directory')}>
+        <TodosContainer ref={ref}>
+          <AddNewDirectoryCard id="no-drag" isDragging={false} onClick={() => handleAddItem('directory')}>
             <i className="fi fi-rr-add"></i>
             <p>Add a new Directory</p>
-          </StyledCard>
-          {!isHome && (
-            <Directory 
-            key={'back'} 
-            directory={{
-              id: currentDirectory?.parentId || '',
-              name: '../',
-              created_at: new Date(),
-              updated_at: new Date(),
-            }}
-            />
-          )}
-          {directories?.map((directory) => {
+          </AddNewDirectoryCard>
+          {dirs?.map((directory) => {
             return <Directory key={directory?.id} directory={directory} />
           }
           )}
@@ -64,7 +291,7 @@ const Directory = ({directory, onClick}: any) => {
 
   const navigate = useNavigate();
 
-  const { isDragging } = useSelector(selectDirectory);
+  const { isDragging, toDirectoryId } = useSelector(selectDirectory);
 
   const handleDelete = async (e: any, id: number) => {
       e.stopPropagation();
@@ -99,7 +326,10 @@ const Directory = ({directory, onClick}: any) => {
   }, [menuRef]);
 
     return (
-      <StyledCard isDragging={isDragging} key={directory?.id} id={"directory-" + directory?.id} onClick={() => navigate(`/directories/${directory?.id}`)}>
+      <StyledCard isToDirectory={toDirectoryId===directory.id} isDragging={isDragging} key={directory?.id} id={"directory-" + directory?.id} onClick={
+        () => navigate(`/directories/${directory?.id || ''}`)
+      }>
+      {directory.id && <DragIcon className="drag-handle" src={dragSrc} style={{width: "20px", height: "20px"}}/>}
       <RighTopCorner ref={menuRef}>
         <Icon className="fi fi-bs-menu-dots-vertical" onClick={
           (event) => {
@@ -132,6 +362,14 @@ const Directory = ({directory, onClick}: any) => {
     </StyledCard>
     )
 }
+
+const DragIcon = styled.img`
+  &:hover {
+    cursor: grab;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+  }
+`;
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -219,15 +457,16 @@ const ActionsContainer = styled.div`
   font-size: 2px;
 `;
 
-const StyledCard = styled.div<{isDragging: boolean}>`
+const StyledCard = styled.div<{isDragging: boolean, isToDirectory?: boolean}>`
   display: flex;
   margin-bottom: 20px;
   width: 200px;
   align-items: center;
   flex-grow: 1;
-  flex-direction: column;
+  /* flex-direction: column; */
   background-color: ${(props) => (props.isDragging ? "#f2f2f2" : "white")};
   border: ${(props) => (props.isDragging ? "2px dashed #ccc" : "1px solid #ccc")};
+  color: ${(props) => (props.isToDirectory ? "red" : "black")};
   border-radius: 5px;
   padding: 10px;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
@@ -248,3 +487,6 @@ const StyledCard = styled.div<{isDragging: boolean}>`
     text-decoration: underline;
   }
 `;
+const AddNewDirectoryCard = styled(StyledCard)`
+  flex-direction: column;
+`

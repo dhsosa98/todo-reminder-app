@@ -113,10 +113,9 @@ export class TodoItemService {
     if (!result) {
       throw new NotFoundException(`TodoItem with id ${id} not found`);
     }
-    const { directoryId, ...rest } = todoItem;
-    result.notification = rest.notification;
-    // result.update({ userId, directoryId: directoryId || null, ...rest });
-    // await result.save();
+    const { directoryId, notification, ...rest } = todoItem;
+    result.update({ userId, directoryId: directoryId || null, ...rest });
+    await result.save();
     this.eventEmitter.emit('task.updated', todoItem);
     return result;
   }
