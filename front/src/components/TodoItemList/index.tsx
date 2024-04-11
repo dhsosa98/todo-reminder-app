@@ -169,7 +169,6 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
     const node = e.target as HTMLElement;
     let dropElement: Element | null = null;
     const nodeData = parents.has(node) ? parents.get(node) : null;
-    console.log({nodeData});
     if (!nodeData) return;
     if (e instanceof MouseEvent) {
       dropElement = document.elementFromPoint(e.clientX, e.clientY);
@@ -177,9 +176,12 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       dropElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
     }
     const prevElement = getPrevElement(dropElement as HTMLElement, directoriesEl!);
-    const newDirectoryId = Number(prevElement?.getAttribute("id")?.split("-")[1]);
+    const newDirectoryId = prevElement?.getAttribute("id")?.split("-")[1];
+    if (newDirectoryId === undefined) return dispatch(
+      setToDirectoryId(undefined)
+    );
     dispatch(
-      setToDirectoryId(newDirectoryId || null)
+      setToDirectoryId(Number(newDirectoryId) || null)
     );
   }
 

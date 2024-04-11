@@ -153,25 +153,28 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
       draggable: (el) => {
         return el.id !== "no-drag";
       },  
-      dropZoneClass: "drop-zone",
-      handleDragstart: () => {
+      handleDragstart: ({e}) => {
         dispatch(
           setToDirectoryId(undefined)
         ); 
+        const fromElem = document.elementFromPoint(e.clientX, e.clientY);
+        if (!fromElem?.classList.contains("drag-handle")) {
+          e.preventDefault();
+          return;
+        }
         dispatch(
           setIsDragging(true)
         )
       },
       handleTouchstart: ({e, targetData}) => {
-        const node = targetData.node.el;
         const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        if (!fromElem) return;
         if (!fromElem?.classList.contains("drag-handle")) {
           dispatch(
             setToDirectoryId(undefined)
           );
           return;
         }
-        // if (node.id === "no-drag") return;
         makeACopy(e, targetData);
         dispatch(
           setToDirectoryId(undefined)
@@ -186,6 +189,7 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
         const dragImage = document.querySelector(".drag-image") as HTMLElement;
+        if (!dragImage) return;
 
         dragImage.style.top = e.changedTouches[0].clientY + scrollTop - 40 + "px";
         dragImage.style.left = e.changedTouches[0].clientX + scrollLeft - 20 + "px";
@@ -194,24 +198,15 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         const toElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
         const el = getPrevElement(toElement as HTMLElement, targetData.parent.el);
         const toId = targetData.parent.data.enabledNodes.find((node) => node.el === el)?.data.value.id;
-        if (toId===undefined) return;
         if (toId === targetData.node.data.value.id) return;
-        dispatch(
-          setToDirectoryId(toId || null)
-        );
-      },
-      handleTouchOverNode: (data) => {
-        const toId = data.detail.targetData.node.data.value.id;
-        if (toId===undefined) return;
         dispatch(
           setToDirectoryId(toId)
         );
       },
       handleDragoverNode({e, targetData}) {
         const toId = targetData.node.data.value.id;
-        if (toId===undefined) return;
         dispatch(
-          setToDirectoryId(toId || null)
+          setToDirectoryId(toId)
         );
       },
       handleEnd: ({e, targetData}) => {
@@ -224,6 +219,12 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         dispatch(
           setToDirectoryId(undefined)
         );
+        if (e instanceof TouchEvent) {
+          const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+          if (!fromElem?.classList.contains("drag-handle")) {
+            return;
+          }
+        }
         let dropElement: Element | null = null;
         const parent = targetData.parent.el;
         if (e instanceof MouseEvent) {
@@ -247,9 +248,6 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
           }) as ActionFromReducer<Partial<IDirectory>>
         )
       },
-      plugins: [
-        animations(),
-      ]
     })
 
     useEffect(() => {

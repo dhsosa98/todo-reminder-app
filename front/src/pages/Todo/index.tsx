@@ -24,6 +24,11 @@ import { useDispatch } from "react-redux";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
+const isNotValidId = (id: string|undefined) => {
+  if (!id) return false;
+  return isNaN(Number(id));
+}
+
 const Todo: FC = () => {
   const { id } = useParams();
 
@@ -58,7 +63,7 @@ const Todo: FC = () => {
     dispatch(setIsOpenedModal(true));
   }
 
-  if (error === "Not Found") {
+  if (error === "Not Found" || isNotValidId(id)) {
     return (
       <StyledCenterContainer>
         <StyledH1>Not Found</StyledH1>

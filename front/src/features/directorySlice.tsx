@@ -120,7 +120,7 @@ export const initialDirectoryState: {
   isOpenedModal: false,
   editableDirectory: null,
   currentDirectory: {
-    id: null,
+    id: undefined,
     name: "",
     children: [],
     todoItem: [],
@@ -153,7 +153,6 @@ const directorySlice = createSlice({
     },
     updateTodoItem: (state, action: PayloadAction<ITodoItem>) => {
       const directoryId = action.payload.directoryId;
-      console.log(state.currentDirectory.id, directoryId)
       if (directoryId !== state.currentDirectory.id) {
         state.currentDirectory.todoItem = state.currentDirectory.todoItem?.filter(
           (item) => item.id !== action.payload.id
