@@ -150,9 +150,6 @@ const TodoItem: FC<TodoItemProps> = ({ item, draggingId, groupIds }) => {
 export default TodoItem;
 
 const DragIcon = styled.img`
-  width: 20px;
-  height: 20px;
-  padding: 4px;
   &:hover {
     cursor: grab;
     background-color: #f2f2f2;
@@ -281,7 +278,7 @@ const StyledCard = styled.div<{isDragZone: boolean, isDraggignId: boolean}>`
   background-color: ${(props) => (props.isDragZone ? "#f2f2f2" : "white")};
   border: ${(props) => (props.isDragZone ? "2px dashed #ccc" : "1px solid #ccc")};
   padding: 10px;
-  min-width: 180px;
+  min-width: 200px;
   border-radius: 5px;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);  
   position: relative;

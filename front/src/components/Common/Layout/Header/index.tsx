@@ -1,27 +1,28 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, forwardRef, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { LOGOUT } from "../../../../features/authSlice";
 import { StyledBackButton } from "../../Styled-components";
 import { getNotifications, markAsRead } from "../../../../services/notifications";
 import { IUserNotification } from "../../../../interfaces/User/IUserNotification";
 import useSearch from "../../../../hooks/useSearch";
 import SearchBar from "../../../SearchBar";
+import bellIcon from '/bell.svg';
 
 const NotificationBadge = styled.div`
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -4px;
+  right: -4px;
   background-color: red;
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
-  font-size: 10px;
+  font-size: 9px;
 `;
 
 const NotificationIconWrapper = styled.div`
@@ -32,17 +33,17 @@ const NotificationIconWrapper = styled.div`
 `;
 
 
-const NotificationIcon = ({ readNotificationsAmount, children, isShowBadge, onClick }: any) => (
-    <NotificationIconWrapper onClick={onClick}>
-      <Icon className="fi fi-rs-bell"></Icon>
+const Notification = forwardRef(({ readNotificationsAmount, children, isShowBadge, onClick }: any, ref: any) => (
+    <NotificationIconWrapper ref={ref} onClick={onClick}>
+      <Icon src={bellIcon} className="fi fi-rs-bell"></Icon>
       {readNotificationsAmount > 0 && isShowBadge && (
         <NotificationBadge>
-          {readNotificationsAmount>9 ? '9+' : readNotificationsAmount}
+         {readNotificationsAmount>9 ? '9+' : readNotificationsAmount}
         </NotificationBadge>
       )}
       {children}
     </NotificationIconWrapper>
-  );
+));
 
 
 const Header: FC<any> = ({children}) => {
@@ -72,9 +73,24 @@ const Header: FC<any> = ({children}) => {
 
   const menuRef = useRef(null);
 
+  const notificationRef = useRef(null);
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+    document.body.style.overflow = isOpened ? 'hidden' : 'auto';
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpened]);
+
   useEffect(() => {
     function handleClickOutside(event: any) {
       event.stopPropagation();
+      if (notificationRef.current && (notificationRef.current as any).contains(event.target)) {
+        return;
+      }
       if (menuRef.current && !(menuRef.current as any).contains(event.target)) {
         setIsOpened(false);
       }
@@ -86,20 +102,7 @@ const Header: FC<any> = ({children}) => {
       // Unbind the event listener on clean up
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuRef]);
-
-  useEffect(() => {
-    if (isOpened) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-  
-    // Clean up function
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-}, [isOpened]);
+  }, [menuRef, notificationRef]);
 
   const fetchNotifications = async () => {
     const response = await getNotifications();
@@ -131,6 +134,7 @@ const Header: FC<any> = ({children}) => {
 
 
     let readNotificationsAmount = readNotifications.length;
+
     return (
         <StyledHeader>
             {/* <StyledButton onClick={openHamburgerMenu}>🈯</StyledButton>
@@ -142,17 +146,20 @@ const Header: FC<any> = ({children}) => {
             ))} */}
             <StyledCloseButton onClick={handleClose}>Logout</StyledCloseButton>
             {/* <i className="fi fi-rr-user"></i> */}
-        <NotificationIcon readNotificationsAmount={readNotificationsAmount} isShowBadge={!isOpenedFirstTime} onClick={onToggleMenu} >
+        <NotificationContainer>
+        <Notification ref={notificationRef} readNotificationsAmount={readNotificationsAmount} isShowBadge={!isOpenedFirstTime} onClick={onToggleMenu} />
         {isOpened && (
           <Menu ref={menuRef}>
+            <h3>Notifications</h3>
             {notifications.map((notification) => {
                 return (
                     <MenuItem notification={notification} key={notification.id} />
                 )
             })}
           </Menu>
-          )}
-        </NotificationIcon>
+        )}
+        </NotificationContainer>
+        
         <SearchBar search={search} handleSearch={(e) => updateSearch(e.target.value)} />
             {/* <StyledBackButton onClick={handleNavigate}>Back</StyledBackButton> */}
 
@@ -185,7 +192,7 @@ const MenuItem = ({notification}: any) => {
         <MenuItemLi key={notification.id} onMouseEnter={onMouseEnter} read={notification.read} >
           <div>
               <p>
-              {notification.notification.title + notification.notification.body}
+              <span>{notification.notification.title + notification.notification.body}</span>
               {showBadge && <NewBadge>New</NewBadge>}
               </p>
               <h6>{sendText}</h6>
@@ -193,6 +200,12 @@ const MenuItem = ({notification}: any) => {
         </MenuItemLi>
     )
 }
+
+const NotificationContainer = styled.div`
+  @media (min-width: 768px) {
+    position: relative;
+  }
+`;
 
 const NewBadge = styled.span`
   background-color: #3d53c5;
@@ -204,11 +217,16 @@ const NewBadge = styled.span`
   margin-left: 8px;
 `;
 
-const Icon = styled.i`
+const Icon = styled.img`
     cursor: pointer;
-    position: relative;
+    width: 22px;
+    height: 22px;
     &:hover {
       background-color: #f5f5f5;
+      border-radius: 50%;
+    }
+    @media (min-width: 768px) {
+      position: relative;
     }
 `;
 
@@ -216,7 +234,7 @@ const MenuItemLi = styled.li<{read: boolean}>`
   cursor: pointer;
   display: flex;
   gap: 6px;
-  padding: 5px;
+  padding: 8px 0px;
   background-color: ${(props) => (props.read ? 'white' : '#f5f5f5')};
   & p, h6 {
     margin: 0;
@@ -229,7 +247,7 @@ const MenuItemDelete = styled(MenuItem)`
   }
 `;
 
-const Menu = styled.ul`
+const Menu = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -237,22 +255,36 @@ const Menu = styled.ul`
   border: 1px solid #ccc;
   background-color: white;
   z-index: 100;
-  top: 10px;
+  top: 22px;
   font-size: 0.8rem;
-  padding: 5px;
+  padding: 10px;
   border-radius: 5px;
-  width: 200px;
+  width: 400px;
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   list-style: none;
-  left: -200px;
+  left: -380px;
   max-height: 500px;
   overflow-y: auto;
   & li:not(:last-child) {
     border-bottom: 1px solid #ccc;
   }
+  animation: appear 0.5s ease-in-out;
   @media (max-width: 768px) {
-    left: -130px;
-    max-height: 300px;
+    left: 0;
+    right: 0;
+    top: 62px;
+    width: 100vw;
+    height: 100vh;
+    min-height: 100vh;
+    max-height: auto;
+  }
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    } 
   }
 `;
 

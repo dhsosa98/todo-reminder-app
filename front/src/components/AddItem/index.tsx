@@ -204,7 +204,7 @@ const AddItem: FC<AddItemProps> = ({handleClose, type}) => {
     <StyledWrapperSectionAddItem>
       <StyledH3>{isEdit ? "Edit" : `Add`} {isDirectory ? "Directory" : "Task"}</StyledH3>
       <AddItemForm onSubmit={handleSubmit}>
-        <StyledLabel htmlFor="description">Description</StyledLabel>
+        <StyledLabel htmlFor="description">{isDirectory ? "Name" : "Description"}</StyledLabel>
         <StyledDescriptionInput
           name="description"
           value={description}
