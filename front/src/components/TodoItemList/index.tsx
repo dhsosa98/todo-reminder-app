@@ -200,7 +200,6 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         order: index
       }
     });
-    handleSort(sortedTodos)
     let dropElement: Element | null = null;
     if (e instanceof MouseEvent) {
       dropElement = document.elementFromPoint(e.clientX, e.clientY);
@@ -210,7 +209,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
     const prevElement = getPrevElement(dropElement as HTMLElement, directoriesEl!);
     const node = e.target as HTMLElement;
     const prevElement2 = getPrevElement(node, parent);
-    if (!prevElement2) return;
+    if (!prevElement2) return handleSort(sortedTodos);
     const id = Number(prevElement2.getAttribute("id")?.split("-")[1]);
     if (prevElement && id) {
       const newDirectoryId = Number(prevElement?.getAttribute("id")?.split("-")[1]);
@@ -225,6 +224,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         directoryId: newDirectoryId
       } as ITodoItem);
     }
+    handleSort(sortedTodos)
   }
 
 
