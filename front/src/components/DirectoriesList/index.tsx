@@ -153,7 +153,7 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
       draggable: (el) => {
         return el.id !== "no-drag";
       },  
-      handleDragstart: ({e}) => {
+      handleDragstart: ({e, targetData}) => {
         dispatch(
           setToDirectoryId(undefined)
         ); 
@@ -165,6 +165,20 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         dispatch(
           setIsDragging(true)
         )
+        const node = targetData.node.el;
+        const dragImage = node.cloneNode(true) as HTMLElement;
+        node.style.opacity = "0.5";
+        dragImage.style.inlineSize = node.offsetWidth + "px";
+        dragImage.style.position = "fixed"
+        dragImage.style.animation = 'none';
+        dragImage.style.pointerEvents = "none";
+        dragImage.style.zIndex = "9999";
+        dragImage.style.top = -1000 + "px";
+        dragImage.style.left = -1000 + "px";
+        dragImage.classList.add("drag-image");
+        document.body.appendChild(dragImage);
+        e?.dataTransfer?.setDragImage(dragImage, 0, 0);
+        document.body.style.cursor = "grabbing";
       },
       handleTouchstart: ({e, targetData}) => {
         const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
@@ -219,12 +233,13 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         dispatch(
           setToDirectoryId(undefined)
         );
-        if (e instanceof TouchEvent) {
-          const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-          if (!fromElem?.classList.contains("drag-handle")) {
-            return;
-          }
-        }
+        // if (e instanceof TouchEvent) {
+        //   const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        //   console.log({fromElem});
+        //   if (!fromElem?.classList.contains("drag-handle")) {
+        //     return;
+        //   }
+        // }
         let dropElement: Element | null = null;
         const parent = targetData.parent.el;
         if (e instanceof MouseEvent) {
@@ -258,7 +273,7 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
 
     useEffect(() => {
       _setValues(directories);
-    }, [directories.length]);
+    }, [JSON.stringify(directories)]);
 
     return (
         <DirectoriesContainer>

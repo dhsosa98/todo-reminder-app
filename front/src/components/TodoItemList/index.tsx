@@ -24,16 +24,11 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
 
     const [draggingId, setDraggingId] = useState<number | null>(null);
 
-    useEffect(() => {
-      dispatch(setIsDragging(!!draggingId));
-    },[draggingId]);
-
-
     const taskLefts = todoList?.filter((todo) => !todo.selected);
 
     const taskCompleted = todoList?.filter((todo) => todo.selected);
 
-    const { toDirectoryId, directoriesEl } = useSelector(selectDirectory);
+    const { toDirectoryId, directoriesEl, isLoading } = useSelector(selectDirectory);
 
     const dispatch = useDispatch();
 
@@ -43,12 +38,11 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
 
       if (clientY < 200) {
         // Scroll up
-        window.scrollBy(0, clientY * -0.07);
+        window.scrollBy(0, -3);
       } else if (clientY > innerHeight - 200) {
         // Scroll down
-        window.scrollBy(0, (clientY - innerHeight) * 0.07);
+        window.scrollBy(0, 3);
       } 
-      handleOver(event);
     };
 
     const touchmove = (event: TouchEvent) => {
@@ -62,7 +56,6 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         // Scroll down
           window.scrollBy(0, 3);
       } 
-      handleOver(event);
     }
 
     useEffect(() => {
@@ -74,7 +67,11 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       }
     }, []);
 
-    function getPrevElement(element: HTMLElement | null, parentNode: Element): Element | null {
+    useEffect(() => {
+      dispatch(setIsDragging(!!draggingId));
+    },[draggingId]);
+
+    function getPrevElement(element: HTMLElement | null, parentNode: Element): HTMLElement | null {
       let prevElement = null;
       while (element && element !== parentNode) {
         prevElement = element;
@@ -103,11 +100,18 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         const id = Number(prevElement.getAttribute("id")?.split("-")[1]);
         setDraggingId(id);
         const dragImage = prevElement.cloneNode(true) as HTMLElement;
-        dragImage.style.width = "200px";
-        dragImage.className = "drag-image";
+        dragImage.style.inlineSize = node.offsetWidth + "px";
+        dragImage.style.position = "fixed"
+        dragImage.style.animation = 'none';
+        dragImage.style.pointerEvents = "none";
+        dragImage.style.zIndex = "9999";
+        dragImage.style.top = -1000 + "px";
+        dragImage.style.left = -1000 + "px";
+        dragImage.classList.add("drag-image");
         document.body.appendChild(dragImage);
         event?.dataTransfer?.setDragImage(dragImage, 0, 0);
         document.body.style.cursor = "grabbing";
+        window.addEventListener('dragover', handleOver);
       }
 
       const touchstart = (event: TouchEvent) => {
@@ -122,9 +126,11 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         const id = Number(prevElement.getAttribute("id")?.split("-")[1]);
         setDraggingId(id);
         document.body.style.cursor = "grabbing";
+        window.addEventListener('touchmove', handleOver);
       }
 
       function dragend(event: DragEvent) {
+        window.removeEventListener('dragover', handleOver);
         document.querySelectorAll(".drag-image").forEach((node) => {
           node.remove();
         });
@@ -139,6 +145,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       }
 
       const touchend = (event: TouchEvent) => {
+        window.removeEventListener('touchmove', handleOver);
         handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
         setDraggingId(null);
         document.body.style.cursor = "auto";
@@ -168,8 +175,8 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
   const handleOver = (e: DragEvent|TouchEvent) => {
     const node = e.target as HTMLElement;
     let dropElement: Element | null = null;
-    const nodeData = parents.has(node) ? parents.get(node) : null;
-    if (!nodeData) return;
+    // const nodeData = parents.has(node) ? parents.get(node) : null;
+    // if (!nodeData) return;
     if (e instanceof MouseEvent) {
       dropElement = document.elementFromPoint(e.clientX, e.clientY);
     } else if (e instanceof TouchEvent && e.changedTouches.length > 0) {
@@ -193,6 +200,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         order: index
       }
     });
+    handleSort(sortedTodos)
     let dropElement: Element | null = null;
     if (e instanceof MouseEvent) {
       dropElement = document.elementFromPoint(e.clientX, e.clientY);
@@ -217,7 +225,6 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         directoryId: newDirectoryId
       } as ITodoItem);
     }
-    handleSort(sortedTodos)
   }
 
 
@@ -249,17 +256,17 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
 
     useEffect(() => {
       _setValuesLeft(taskLefts);
-    }, [taskLefts.length]);
+    }, [isLoading, taskLefts.length]);
 
     useEffect(() => {
       _setValuesDone(taskCompleted);
-    }, [taskCompleted.length]);
+    }, [isLoading, taskCompleted.length]);
 
 
     const handleSort = useCallback((todos: ITodoItem[]) => {
-        // dispatch(
-        //   updateTodoItemOrder(todos) as ActionFromReducer<ITodoItem[]>
-        // )
+        dispatch(
+          updateTodoItemOrder(todos) as ActionFromReducer<ITodoItem[]>
+        )
     },[]);
 
     return (

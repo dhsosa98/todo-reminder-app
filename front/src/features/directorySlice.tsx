@@ -90,12 +90,13 @@ export const getDirectoryByUser = createAsyncThunk<IDirectory, number|undefined|
   async (id, { dispatch, getState }) => {
     try {
       const currentDirectoryId = (getState() as RootState).directory?.currentDirectory?.id as number;
+      id = id===undefined ? currentDirectoryId : id;
       dispatch(setIsLoading(true));
       if (id === null || id === undefined) {
         const { data } = await directoryService.getBaseDirectories();
         return data;
       }
-      const { data } = await directoryService.getDirectory(id || currentDirectoryId);
+      const { data } = await directoryService.getDirectory(id || null);
       return data;
     } catch (err) {
       handleErrors(err, dispatch, setError);
