@@ -227,6 +227,7 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
         document.querySelectorAll(".drag-image").forEach((node) => {
           node.remove();
         });
+        document.body.style.cursor = "auto";
         dispatch(
           setIsDragging(false)
         );

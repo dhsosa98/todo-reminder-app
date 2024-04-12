@@ -88,21 +88,17 @@ export const deleteDirectoryById = createAsyncThunk<void, number>(
 export const getDirectoryByUser = createAsyncThunk<IDirectory, number|undefined|null>(
   "directories/getDirectory",
   async (id, { dispatch, getState }) => {
-    try {
       const currentDirectoryId = (getState() as RootState).directory?.currentDirectory?.id as number;
       id = id===undefined ? currentDirectoryId : id;
       dispatch(setIsLoading(true));
       if (id === null || id === undefined) {
+        dispatch(setIsLoading(false));
         const { data } = await directoryService.getBaseDirectories();
         return data;
       }
+      dispatch(setIsLoading(false));
       const { data } = await directoryService.getDirectory(id || null);
       return data;
-    } catch (err) {
-      handleErrors(err, dispatch, setError);
-    } finally {
-      dispatch(setIsLoading(false));
-    }
   }
 );
 
@@ -193,6 +189,12 @@ const directorySlice = createSlice({
         state.currentDirectory = action.payload;
       }
     );
+    builder.addCase(
+      getDirectoryByUser.rejected,
+      (state, action) => {
+        state.error = action.error.message || "";
+      }
+    )
   },
 });
 

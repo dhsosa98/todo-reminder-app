@@ -44,10 +44,6 @@ const Todo: FC = () => {
     return item.description.toLowerCase().includes(search.toLowerCase());
   });
 
-  const handleSearch = (e: SyntheticEvent<HTMLInputElement>) => {
-    const { value } = e.currentTarget;
-    updateSearch(value);
-  };
 
   const subDirectoriesFiltered = children?.filter((item) => {
     return item.name.toLowerCase().includes(search.toLowerCase());
@@ -55,23 +51,11 @@ const Todo: FC = () => {
 
   const dispatch = useDispatch();
 
-
   const [type, setType] = useState<'directory' | 'task' | ''>('');
 
   const handleAddItem = (type: 'directory' | 'task' | '') => {
     setType(type);
     dispatch(setIsOpenedModal(true));
-  }
-
-  if (error === "Not Found" || isNotValidId(id)) {
-    return (
-      <StyledCenterContainer>
-        <StyledH1>Not Found</StyledH1>
-        <NotFound title="Directory with that ID">
-          <StyledBackButton onClick={()=>{navigate(-1)}}>Back</StyledBackButton>
-        </NotFound>
-      </StyledCenterContainer>
-    );
   }
 
   const [scheduledPercentage, setScheduledPercentage] = useState(0);
@@ -93,6 +77,17 @@ const Todo: FC = () => {
   const lastCreatedTask = sortByCreatedAt[0];
 
   const scheduledTasks = todoItem?.filter((item) => item.notification?.active);
+
+  if (error || isNotValidId(id)) {
+    return (
+      <StyledCenterContainer>
+        <StyledH1>Not Found</StyledH1>
+        <NotFound title="Directory with that ID">
+          <StyledBackButton onClick={()=>{navigate(-1)}}>Back</StyledBackButton>
+        </NotFound>
+      </StyledCenterContainer>
+    );
+  }
 
   return (
     <StyledCenterContainer>
