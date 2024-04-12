@@ -84,9 +84,9 @@ const EditTodoItem: FC = () => {
   const handleUpdate = async () => {
     dispatch(
       updateTodoItemById({
+        ...todoItem,
         id: Number(id),
-        todoItem,
-      }) as ActionFromReducer<ITodoItem>
+      }) as ActionFromReducer<Partial<ITodoItem>>
     );
     dispatch(resetError());
     // handleNavigate();

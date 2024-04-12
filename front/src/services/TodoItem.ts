@@ -12,7 +12,7 @@ export const deleteTodoItem = async (id: number) => {
   return await Axios.delete(`${baseURL}/${id}`);
 };
 
-export const updateTodoItem = async (id: number, todoItem: ITodoItem) => {
+export const updateTodoItem = async (id: number, todoItem: Partial<ITodoItem>) => {
   return await Axios.put(`${baseURL}/${id}`, todoItem);
 };
 

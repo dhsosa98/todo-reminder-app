@@ -1,5 +1,3 @@
-//create auth slice
-
 import { PayloadAction, createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "../app/store";
 import { ILoginUser } from "../interfaces/User/ILoginUser";
@@ -29,7 +27,6 @@ export const fetchUser = createAsyncThunk<void, ILoginUser>(
 export const registerUserWithGoogle = createAsyncThunk<void, string|undefined>(
   "auth/registerUserWithGoogle",
   async (token = '', { dispatch }) => {
-    console.log(token)
     try {
       const {token, user} = await singInWithGoogle();
       const { data } = await authService.signUpWithGoogle(token, user);

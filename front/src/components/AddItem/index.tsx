@@ -118,15 +118,12 @@ const AddItemModal = ({
 };
 
 const AddItem: FC<AddItemProps> = ({handleClose, type}) => {
-  const navigate = useNavigate();
-
-  const { currentDirectory } = useDirectory();
-
-  const directory = currentDirectory as IDirectory;
 
   const { error, currentTodoItem } = useSelector(selectTodoItems);
 
-  const { editableDirectory } = useSelector(selectDirectory);
+  const { editableDirectory, currentDirectory } = useSelector(selectDirectory);
+
+  const directory = currentDirectory as IDirectory;
 
   const isEdit = editableDirectory?.id || currentTodoItem?.id
 
@@ -164,13 +161,10 @@ const AddItem: FC<AddItemProps> = ({handleClose, type}) => {
     if (isEdit) {
       dispatch(
         updateTodoItemById({
-          id: currentTodoItem?.id!,
-          todoItem: {
-            ...currentTodoItem,
-            description: description,
-            notification: currentTodoItem?.notification,
-          },
-        }) as ActionFromReducer<IUpdateDirectory>
+          ...currentTodoItem,
+          description: description,
+          notification: currentTodoItem?.notification,
+        }) as ActionFromReducer<Partial<ITodoItem>>
       );
       handleClose();
       return;

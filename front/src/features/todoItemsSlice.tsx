@@ -8,6 +8,7 @@ import { ICreateTodoItem } from "../interfaces/TodoItem/ICreateTodoItem";
 import { directoryService } from "../services/directories";
 import { IDirectory } from "../interfaces/Directory/IDirectory";
 import { getDirectoryByUser, updateTodoItem, updateTodoItems } from "./directorySlice";
+import TodoItem from "../components/TodoItem";
 
 export const updateTodoItemOrder = createAsyncThunk<void, ITodoItem[]>(
   "todoItems/updateTodoItemOrder",
@@ -33,17 +34,14 @@ export const createTodoItemByUser = createAsyncThunk<void, ICreateTodoItem>(
     try {
       if (todoItem.description.length < 3) {
         dispatch(
-          setError(
-            "Please enter a TodoItem Description of at least 3 characters"
-          )
+          setError("Please enter a TodoItem name of at least 3 characters")
         );
         return;
       }
-      const { id } = (getState() as RootState).todoitems.directory;
       dispatch(setIsLoading(true));
       await todoItemService.createTodoItem(todoItem);
       await successAlert("The TodoItem has been Created Successfully");
-      await dispatch(getDirectoryByUser(id));
+      await dispatch(getDirectoryByUser());
     } catch (err) {
       handleErrors(err, dispatch, setError);
     } finally {
@@ -62,8 +60,7 @@ export const deleteTodoItemById = createAsyncThunk<void, number>(
       );
       dispatch(setIsLoading(true));
       await todoItemService.deleteTodoItem(id);
-      const { id: directoryId } = (getState() as RootState).directory.currentDirectory;
-      await dispatch(getDirectoryByUser(directoryId));
+      await dispatch(getDirectoryByUser());
     } catch (err) {
       handleErrors(err, dispatch, setError);
     } finally {
@@ -72,20 +69,14 @@ export const deleteTodoItemById = createAsyncThunk<void, number>(
   }
 );
 
-interface IUpdateTodoItem {
-  id: number;
-  todoItem: ITodoItem;
-}
-
-export const updateTodoItemById = createAsyncThunk<void, IUpdateTodoItem>(
+export const updateTodoItemById = createAsyncThunk<void, Partial<ITodoItem>>(
   "todoItems/updateTodoItem",
-  async ({ id, todoItem }, { dispatch, getState }) => {
+  async (todoItem, { dispatch, getState }) => {
     try {
       dispatch(setIsLoading(true));
-      await todoItemService.updateTodoItem(id, todoItem);
+      await todoItemService.updateTodoItem(todoItem.id!, todoItem);
       await successAlert("The TodoItem has been Updated Successfully");
-      const { id: directoryId } = (getState() as RootState).directory.currentDirectory;
-      await dispatch(getDirectoryByUser(directoryId));
+      await dispatch(getDirectoryByUser());
     } catch (err) {
       handleErrors(err, dispatch, setError);
     } finally {
@@ -102,7 +93,6 @@ export const updateSelected = createAsyncThunk<void, ITodoItem>(
       const {notification, ...task} = todoItem
       await todoItemService.updateTodoItem(todoItem.id, task);
       const { id: directoryId } = (getState() as RootState).directory.currentDirectory;
-      // await dispatch(getDirectoryByUser(directoryId));
     } catch (err) {
       handleErrors(err, dispatch, setError);
     }
@@ -145,12 +135,7 @@ export const initiaTaskslState = {
   todoList: [] as ITodoItem[],
   currentTodoItem: null as unknown as ITodoItem,
   isLoading: false,
-  directory: {
-    id: 0,
-    name: "",
-    children: [],
-    todoItem: [],
-  } as IDirectory,
+  status: "idle" as 'idle' | 'loading' | 'succeeded' | 'failed',
   error: "",
   search: "",
 };
@@ -187,9 +172,16 @@ const todoItemsSlice = createSlice({
       (state, action: PayloadAction<ITodoItem>) => {
         state.currentTodoItem = action.payload;
       }
+    ),
+    builder.addCase(
+      createTodoItemByUser.rejected,
+      (state, action) => {
+        state.error = action.error.message || "";
+      }
     )
-  },
+  }
 });
+
 
 export const {
   setIsLoading,

@@ -6,10 +6,7 @@ export const deleteAlert = async (title: string, textAfter: string, text?: strin
     return await Swal.fire({
     title: title || 'Are you sure?',
     text: text || "You won't be able to revert this!",
-    icon: 'warning',
-    showCancelButton: true,
     confirmButtonColor: 'red',
-    cancelButtonColor: '##c3c2c0;',
     confirmButtonText: 'Yes, delete it!'
 }).then((result: any) => {
     if (!result.value) {
@@ -39,24 +36,27 @@ export const successAlert = async (title: string, text?: string) =>{
 }
 
 export const infoAlert = async (title: string, text?: string) =>{
-    return await Swal.fire({
-        title: title,
-        text: text,
-        icon: 'info',
-        showCancelButton: false,
-        showConfirmButton: false,
-        timer: 1500,
-    })
+    return toast.info(title + ' ' + (text || ''), {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+    });
 }
 
 export const errorAlert = async (title: string, text?: string) =>{
-    return await Swal.fire({
-        title: title,
-        text: text,
-        icon: 'error',
-        showCancelButton: false,
-        showConfirmButton: false,
-    })
+    return toast.error(title + ' ' + (text || ''), {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+    });
 }
 
 
