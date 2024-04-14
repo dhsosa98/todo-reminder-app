@@ -55,15 +55,18 @@ function App() {
     requestPermission(dispatch);
   }, [isAuthenticated, dispatch]);
 
+
+
+  useEffect(() => {
   onMessage(messaging, (payload: any) => {
-    console.log("Message received. ", payload);
-    // ...
+    console.log('Message received. ', payload);
     toast(payload.notification.title + ' ' + payload.notification.body, {
       type: 'info',
       theme: 'colored',
       position: 'bottom-right',
     });
   });
+  }, []);
 
   return (
     <BrowserRouter>

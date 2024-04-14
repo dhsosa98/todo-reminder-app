@@ -31,57 +31,26 @@ export const updateTodoItemOrder = createAsyncThunk<void, ITodoItem[]>(
 export const createTodoItemByUser = createAsyncThunk<void, ICreateTodoItem>(
   "todoItems/createTodoItem",
   async (todoItem, { dispatch, getState }) => {
-    try {
-      if (todoItem.description.length < 3) {
-        dispatch(
-          setError("Please enter a TodoItem name of at least 3 characters")
-        );
-        return;
-      }
-      dispatch(setIsLoading(true));
-      await todoItemService.createTodoItem(todoItem);
-      await successAlert("The TodoItem has been Created Successfully");
-      await dispatch(getDirectoryByUser());
-    } catch (err) {
-      handleErrors(err, dispatch, setError);
-    } finally {
-      dispatch(setIsLoading(false));
-    }
+    await todoItemService.createTodoItem(todoItem);
+    await successAlert("The TodoItem has been Created Successfully");
+    await dispatch(getDirectoryByUser());
   }
 );
 
 export const deleteTodoItemById = createAsyncThunk<void, number>(
   "todoItems/deleteTodoItem",
   async (id, { dispatch, getState }) => {
-    try {
-      await deleteAlert(
-        "Are you sure you want to delete this TodoItem?",
-        "The TodoItem has been deleted Successfully"
-      );
-      dispatch(setIsLoading(true));
       await todoItemService.deleteTodoItem(id);
       await dispatch(getDirectoryByUser());
-    } catch (err) {
-      handleErrors(err, dispatch, setError);
-    } finally {
-      dispatch(setIsLoading(false));
-    }
   }
 );
 
 export const updateTodoItemById = createAsyncThunk<void, Partial<ITodoItem>>(
   "todoItems/updateTodoItem",
   async (todoItem, { dispatch, getState }) => {
-    try {
-      dispatch(setIsLoading(true));
       await todoItemService.updateTodoItem(todoItem.id!, todoItem);
       await successAlert("The TodoItem has been Updated Successfully");
       await dispatch(getDirectoryByUser());
-    } catch (err) {
-      handleErrors(err, dispatch, setError);
-    } finally {
-      dispatch(setIsLoading(false));
-    }
   }
 );
 
@@ -99,42 +68,18 @@ export const updateSelected = createAsyncThunk<void, ITodoItem>(
   }
 );
 
-// export const update = createAsyncThunk<void, IUpdateTodoItem>(
-//   "todoItems/updateTodoItem",
-//   async ({ id, todoItem }, { dispatch, getState }) => {
-//     try {
-//       dispatch(setIsLoading(true));
-//       await todoItemService.updateTodoItem(id, todoItem);
-//       await successAlert("The TodoItem has been Updated Successfully");
-//       const { id: directoryId } = (getState() as RootState).todoitems.directory;
-//       await dispatch(getTodoItemsByUser(directoryId));
-//     } catch (err) {
-//       handleErrors(err, dispatch, setError);
-//     } finally {
-//       dispatch(setIsLoading(false));
-//     }
-//   }
-// );
-
 export const getTodoItemById = createAsyncThunk<ITodoItem, number>(
   "todoItems/getTodoItem",
   async (id, { dispatch }) => {
     try {
-      dispatch(setIsLoading(true));
       const { data } = await todoItemService.getTodoItem(id);
       return data;
-    } catch (err) {
-      handleErrors(err, dispatch, setError);
-    } finally {
-      dispatch(setIsLoading(false));
-    }
   }
 );
 
 export const initiaTaskslState = {
   todoList: [] as ITodoItem[],
   currentTodoItem: null as unknown as ITodoItem,
-  isLoading: false,
   status: "idle" as 'idle' | 'loading' | 'succeeded' | 'failed',
   error: "",
   search: "",
@@ -144,9 +89,6 @@ const todoItemsSlice = createSlice({
   name: "todoItems",
   initialState: initiaTaskslState,
   reducers: {
-    setIsLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
@@ -168,15 +110,80 @@ const todoItemsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(
+      getTodoItemById.pending,
+      (state, action) => {
+        state.status = "loading";
+      }
+    ),
+    builder.addCase(
       getTodoItemById.fulfilled,
       (state, action: PayloadAction<ITodoItem>) => {
+        state.status = "succeeded";
         state.currentTodoItem = action.payload;
+      }
+    ),
+    builder.addCase(
+      getTodoItemById.rejected,
+      (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message || "";
+      }
+    ),
+    builder.addCase(
+      updateTodoItemById.pending,
+      (state, action) => {
+        state.status = "loading";
+      }
+    ),
+    builder.addCase(
+      updateTodoItemById.fulfilled,
+      (state, action) => {
+        state.status = "succeeded";
+      }
+    ),
+    builder.addCase(
+      updateTodoItemById.rejected,
+      (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message || "";
       }
     ),
     builder.addCase(
       createTodoItemByUser.rejected,
       (state, action) => {
         state.error = action.error.message || "";
+        state.status = "failed";
+      }
+    ),
+    builder.addCase(
+      createTodoItemByUser.pending,
+      (state, action) => {
+        state.status = "loading";
+      }
+    ),
+    builder.addCase(
+      createTodoItemByUser.fulfilled,
+      (state, action) => {
+        state.status = "succeeded";
+      }
+    ),
+    builder.addCase(
+      deleteTodoItemById.rejected,
+      (state, action) => {
+        state.error = action.error.message || "";
+        state.status = "failed";
+      }
+    ),
+    builder.addCase(
+      deleteTodoItemById.pending,
+      (state, action) => {
+        state.status = "loading";
+      }
+    ),
+    builder.addCase(
+      deleteTodoItemById.fulfilled,
+      (state, action) => {
+        state.status = "succeeded";
       }
     )
   }
@@ -184,7 +191,6 @@ const todoItemsSlice = createSlice({
 
 
 export const {
-  setIsLoading,
   setError,
   resetError,
   setTodoItem,
