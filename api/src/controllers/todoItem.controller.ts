@@ -10,7 +10,7 @@ import {
   UseGuards,
   Request
 } from '@nestjs/common';
-import { TodoItemDto } from 'src/dtos/todoItem.dto';
+import { TodoItemDto, UpdateToDoItemOrderDto } from 'src/dtos/todoItem.dto';
 
 @Controller('todoitems')
 export class TodoItemController {
@@ -39,5 +39,10 @@ export class TodoItemController {
   @Put('/:id')
   updateTodoItem(@Request() req, @Param('id') id: number, @Body() todoItem: TodoItemDto) {
     return this.todoItemService.update(req.user.userId, id, todoItem);
+  }
+
+  @Post('updateOrder')
+  updateOrder(@Request() req, @Body() todoItems: UpdateToDoItemOrderDto[]) {
+    return this.todoItemService.updateOrder(req.user.userId, todoItems);
   }
 }

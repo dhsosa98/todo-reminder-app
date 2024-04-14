@@ -1,8 +1,9 @@
 import Axios from "../config/axios";
 import { ICreateDirectory } from "../interfaces/Directory/ICreateDirectory";
+import { IDirectory } from "../interfaces/Directory/IDirectory";
+import { IUpdateDirectory } from "../interfaces/Directory/IUpdateDirectory";
 import API_URL from "../vite-env.d";
 const baseURL = `${API_URL}api/directories`;
-console.log(baseURL)
 
 const getDirectories = async () => {
     return await Axios.get(baseURL)
@@ -20,14 +21,34 @@ const getTodoItemsByDirectoryId = async (id: number, search: string) => {
     return await Axios.get(`${baseURL}/${id}/todoitems?${search ? `search=${search}` : ""}`)
 }
 
-const getDirectory = async (id: number) => {
+const getDirectory = async (id: number|null) => {
     return await Axios.get(`${baseURL}/${id}`)
+}
+
+const getBreadcrumbTree = async (id: number) => {
+    return await Axios.get(`${baseURL}/${id}/tree`)
+}
+
+const getBaseDirectories = async () => {
+    return await Axios.get(`${baseURL}/base`)
+}
+
+const getFullTree = async () => {
+    return await Axios.get(`${baseURL}/fullTree`)
+}
+
+const updateDirectory = async (id: number, directory: Partial<IDirectory>) => {
+    return await Axios.post(`${baseURL}/${id}`, directory)
 }
 
 export const directoryService = {
     getDirectories,
     createDirectory,
+    updateDirectory,
     deleteDirectory,
     getTodoItemsByDirectoryId,
-    getDirectory
+    getDirectory,
+    getFullTree,
+    getBreadcrumbTree,
+    getBaseDirectories
 }

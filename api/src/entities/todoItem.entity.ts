@@ -4,12 +4,20 @@ import {
   Model,
   ForeignKey,
   BelongsTo,
+  BeforeSave,
+  BeforeCreate,
+  BeforeUpdate,
+  AfterUpdate,
+  AfterCreate,
+  AfterDestroy,
+  HasOne,
+  AfterSave,
 } from 'sequelize-typescript';
 import { Directory } from './directory.entity';
 import { User } from './user.entity';
-
-@Table({ tableName: 'todoitem', timestamps: false })
+@Table({ tableName: 'todoitem', timestamps: true })
 export class TodoItem extends Model {
+
   @Column({ primaryKey: true, autoIncrement: true })
   id: number;
 
@@ -19,8 +27,12 @@ export class TodoItem extends Model {
   @Column({ defaultValue: false })
   selected: boolean;
 
+
+  @Column({ defaultValue: 0 })
+  order: number;
+
   @ForeignKey(() => Directory)
-  @Column
+  @Column({ allowNull: true })
   directoryId: number;
 
   @ForeignKey(() => User)
@@ -31,4 +43,12 @@ export class TodoItem extends Model {
     onDelete: 'CASCADE',
   })
   directory: Directory;
+
+  get notification(): any {
+    return this.getDataValue('notification');
+  }
+
+  set notification(value: any) {
+    this.setDataValue('notification', value);
+  }
 }

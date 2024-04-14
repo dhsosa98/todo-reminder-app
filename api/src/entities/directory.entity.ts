@@ -10,13 +10,22 @@ export class Directory extends Model {
   @Column
   name: string;
 
+  @ForeignKey(() => Directory)
+  @Column
+  parentId: number;
+
+  @HasMany(() => Directory)
+  children: Directory[];
+
   @HasMany(() => TodoItem)
-  todoItem: TodoItem;
+  todoItem: TodoItem[];
 
   @BelongsTo(() => User, {
     onDelete: 'CASCADE',
   })
   user: User;
+
+  parent?: Directory;
 
   @ForeignKey(() => User)
   @Column

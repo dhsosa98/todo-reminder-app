@@ -28,4 +28,19 @@ export class UsersService {
     await newUser.save();
     return newUser;
   }
+
+  async signWithGoogle(token: string, user: any): Promise<User> {
+    const {displayName, email} = user
+    const userDB = await this.usersRepository.findOne({ where: { username: email }});
+    if (userDB){
+      userDB.password = await bcrypt.hash(token, Number(process.env.HASH_SALT) || 10);
+      await userDB.save();
+      return userDB;
+    }
+    const newUser = new User({ username: email, password: await bcrypt.hash(token, Number(process.env.HASH_SALT) || 10), name: displayName, surname: '', role: 'user'});
+    await newUser.save();
+    // This method should create a user with the data from google
+    // and return the user
+    return newUser;
+  }
 }

@@ -20,6 +20,22 @@ export class DirectoryController {
     return this.directoriesService.findAll(req.user.userId);
   }
 
+  @Get(':id/tree')
+  getTree(@Request() req, @Param('id') id: number) {
+    return this.directoriesService.getTree(req.user.userId, id);
+  }
+
+  @Get('/fullTree')
+  getFullTree(@Request() req) {
+    return this.directoriesService.getFullTree(req.user.userId);
+  }
+
+  
+  @Get('/base')
+  getBaseDirectories(@Request() req) {
+    return this.directoriesService.getBaseDirectories(req.user.userId);
+  }
+
   @Get(':id')
   getDirectory(@Request() req, @Param('id') id: number) {
     return this.directoriesService.findOne(req.user.userId, id);
@@ -42,5 +58,14 @@ export class DirectoryController {
   @Post()
   createDirectory(@Request() req, @Body() directory: DirectoryDto) {
     return this.directoriesService.create(req.user.userId, directory);
+  }
+
+  @Post(':id')
+  updateDirectory(
+    @Request() req,
+    @Param('id') id: number,
+    @Body() directory: DirectoryDto,
+  ) {
+    return this.directoriesService.update(req.user.userId, id, directory);
   }
 }

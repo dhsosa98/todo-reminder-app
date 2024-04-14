@@ -1,5 +1,8 @@
+import { ITodoItem } from "./ITodoItem";
+
 export interface ICreateTodoItem{
     description: string,
     selected: boolean, 
-    directoryId: number,
+    directoryId: number|null,
+    notification?: ITodoItem["notification"]
 }

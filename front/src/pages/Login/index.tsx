@@ -14,11 +14,12 @@ import {
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { fetchUser, LOGIN } from "../../features/authSlice";
+import { fetchUser, LOGIN, registerUserWithGoogle } from "../../features/authSlice";
 import { ActionFromReducer } from "redux";
 import { errorAlert } from "../../utilities/sweetalert";
 import * as yup from "yup";
 import { ErrorMessage, Formik } from "formik";
+import { useSelector } from "react-redux";
 
 const Login: FC = () => {
   const navigate = useNavigate();
@@ -78,7 +79,14 @@ const Login: FC = () => {
             />
             </div>
             <StyledH6 to="/signup">New User? Sign Up</StyledH6>
-            <StyledAddButton type="submit">Login</StyledAddButton>
+            <StyledLoginButtonContainer>
+              <StyledLogginButton type="submit">Login</StyledLogginButton>
+              <StyledH5>Or</StyledH5>
+              <StyledGoogleButton type="button" onClick={() => dispatch(registerUserWithGoogle() as ActionFromReducer<void>)} >
+                <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="google" height={18}  />
+                Login with Google
+              </StyledGoogleButton>
+            </StyledLoginButtonContainer>
           </StyledForm>
         </Formik>
       </StyledWrapperSection>
@@ -87,3 +95,39 @@ const Login: FC = () => {
 };
 
 export default Login;
+
+const StyledLoginButtonContainer = styled.div`
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`; 
+
+const StyledLogginButton = styled(StyledAddButton)`
+  padding: 10px 20px;
+`
+
+
+const StyledH5 = styled.p`
+  text-align: center;
+  margin: 0;
+  display: flex;
+`;
+
+const StyledGoogleButton = styled.button`
+  background-color: white;
+  color: #3d53c5;
+  border: 1px solid #3d53c5;
+  border-radius: 5px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  &:hover {
+    background-color: #3d53c5;
+    color: white;
+  }
+`;

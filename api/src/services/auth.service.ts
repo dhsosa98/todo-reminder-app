@@ -3,18 +3,23 @@ import { JwtService } from '@nestjs/jwt';
 import { UserDto } from 'src/dtos/user.dto';
 import { UsersService } from './user.service';
 import * as bcrypt from 'bcrypt';
+import { DeviceService } from './device.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private deviceService: DeviceService,
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
-    const isValid = await bcrypt.compare(pass, user.password);
-    if (user && isValid) {
+    if (!user) {
+      return null;
+    }
+    const isValid = await bcrypt.compare(pass, user?.password);
+    if (isValid) {
       const { password, ...result } = user;
       return result;
     }
@@ -33,5 +38,17 @@ export class AuthService {
 
   async register(user: UserDto) {
     return await this.usersService.create(user);
+  }
+
+  async signUpWithGoogle(token: string, user: any) {
+    const userDB = await this.usersService.signWithGoogle(token, user) as any;
+    return {
+      access_token: this.jwtService.sign({ username: userDB?.dataValues?.username, sub: userDB?.dataValues?.id }),
+      user: userDB?.dataValues?.username,
+    }
+  }
+
+  async registerFdcToken(userId: number, token: string) {
+    return await this.deviceService.registerFdcToken(userId, token);
   }
 }

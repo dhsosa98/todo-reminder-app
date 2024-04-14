@@ -1,0 +1,19 @@
+{
+    "version": 2,
+    "github": {
+        "enabled": false
+    },
+    "builds": [
+        {
+            "src": "/dist/main.js",
+            "use": "@vercel/node",
+            "config": { "includeFiles": ["dist/**"] }
+          }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/dist/main.js"
+        }
+    ]
+}

@@ -12,7 +12,7 @@ export const deleteTodoItem = async (id: number) => {
   return await Axios.delete(`${baseURL}/${id}`);
 };
 
-export const updateTodoItem = async (id: number, todoItem: ITodoItem) => {
+export const updateTodoItem = async (id: number, todoItem: Partial<ITodoItem>) => {
   return await Axios.put(`${baseURL}/${id}`, todoItem);
 };
 
@@ -24,11 +24,16 @@ export const getTodoItem = async (id: number) => {
   return await Axios.get(`${baseURL}/${id}`);
 };
 
+export const updateTodoItemOrder = async (todoItems: ITodoItem[]) => {
+  return await Axios.post(`${baseURL}/updateOrder`, todoItems);
+}
+
 export const todoItemService = {
   getTodoList,
   deleteTodoItem,
   updateTodoItem,
   createTodoItem,
-  getTodoItem
+  getTodoItem,
+  updateTodoItemOrder
 };
 

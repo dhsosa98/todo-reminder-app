@@ -1,6 +1,7 @@
 import { Table, Column, Model, HasMany, Unique } from 'sequelize-typescript';
 import { Directory } from './directory.entity';
 import { TodoItem } from './todoItem.entity';
+import { Device } from './device.entity';
 
 @Table({ tableName: 'user', timestamps: false })
 export class User extends Model {
@@ -25,6 +26,9 @@ export class User extends Model {
 
   @HasMany(() => Directory)
   directory: Directory;
+
+  @HasMany(() => Device)
+  device: Device;
 
   @HasMany(() => TodoItem)
   todoItem: TodoItem;

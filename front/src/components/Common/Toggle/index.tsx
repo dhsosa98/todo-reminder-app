@@ -60,8 +60,9 @@ const CheckBox = styled.input`
   border-radius: 15px;
   width: 42px;
   height: 26px;
+  margin: 0;
   &:checked + ${CheckBoxLabel} {
-    background: #5290c2;
+    background: #3d53c5;
     &::after {
       content: "";
       display: block;

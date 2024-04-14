@@ -22,4 +22,15 @@ export class AuthController {
   getProfile(@Body() user: UserDto) {
     return this.authService.register(user);
   }
+
+  @Public()
+  @Post('auth/google/signup')
+  async signUpWithGoogle(@Body() body: { token: string, user: any}) {
+    return this.authService.signUpWithGoogle(body.token, body.user);
+  }
+
+  @Post('auth/fdc/register')
+  async registerFdcToken(@Request() req, @Body() body: { token: string }) {
+    return this.authService.registerFdcToken(req.user.userId, body.token);
+  }
 }
