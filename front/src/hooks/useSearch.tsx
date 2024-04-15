@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { selectTodoItems, setSearch } from "../features/todoItemsSlice";
 import { useDispatch } from "react-redux";
+import { selectSearch, setSearch } from "../features/searchSlice";
 
 
 
 
 const useSearch = () => {
 
-  const { search } = useSelector(selectTodoItems);
+  const { search } = useSelector(selectSearch);
 
   const dispatch = useDispatch();
 

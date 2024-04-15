@@ -8,7 +8,7 @@ import {
   StyledEditButton,
   StyledH3,
 } from "../Common/Styled-components";
-import { deleteAlert } from "../../utilities/sweetalert";
+import { deleteAlert, successAlert } from "../../utilities/sweetalert";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import {
@@ -23,6 +23,7 @@ import Draggable from "react-draggable";
 import useTodoItem from "../../hooks/useTodoItem";
 import dragSrc from '/drag.svg';
 import { setIsOpenedModal } from "../../features/directorySlice";
+import handleErrors from "../../utilities/errors";
 
 interface TodoItemProps {
   item: ITodoItem;
@@ -49,10 +50,9 @@ const TodoItem: FC<TodoItemProps> = ({ item, draggingId, groupIds }) => {
   };
 
   const handleDelete = async () => {
-    dispatch(deleteTodoItemById(item?.id) as ActionFromReducer<ITodoItem>);
+    dispatch(deleteTodoItemById(item?.id) as ActionFromReducer<number>);
+    await successAlert("The TodoItem has been Deleted Successfully");
   };
-
-  // I want this format Wed, 21 Apr 2021 at 12:00
 
   const lastUpdateText = new Date(item?.updatedAt).toLocaleString('en-US', {
     weekday: 'short', // represents the day of the week like "Tue"

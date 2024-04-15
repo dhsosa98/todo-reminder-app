@@ -12,6 +12,7 @@ import dragSrc from '/drag.svg';
 import { ref } from "yup";
 import { DNDPlugin, addEvents, animations, parents } from "@formkit/drag-and-drop";
 import { useDragAndDrop } from "@formkit/drag-and-drop/react";
+import { deleteAlert } from "../../utilities/sweetalert";
 
 type DirectoriesListProps = {
     directories: IDirectory[];
@@ -309,6 +310,10 @@ const Directory = ({directory, onClick}: any) => {
 
   const handleDelete = async (e: any, id: number) => {
       e.stopPropagation();
+      await deleteAlert(
+        "Are you sure you want to delete this Directory?",
+        "The Directory has been deleted Successfully"
+      );
       dispatch(deleteDirectoryById(id) as ActionFromReducer<IDirectory[]>);
   };
 

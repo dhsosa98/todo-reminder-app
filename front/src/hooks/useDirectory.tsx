@@ -10,19 +10,27 @@ import { ActionFromReducer } from "redux";
 const useDirectory = (
     directoryId?: number|null
 ) => {
-    const { currentDirectory, isLoading, error } = useSelector(selectDirectory);
+    const { currentDirectory, error, status, ...rest } = useSelector(selectDirectory);
+
+    const isLoading = status === "loading";
 
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (directoryId===undefined) {
+        if (directoryId===undefined || directoryId===currentDirectory?.id) {
             return;
         }
         dispatch(getDirectoryByUser(directoryId) as ActionFromReducer<IDirectory>);
     }, [dispatch, directoryId]);
 
 
-    return { currentDirectory, isLoading, error };
+    return {
+        ...rest,
+        isLoading,
+        currentDirectory,
+        error,
+        status,
+    }
 }
 
 export default useDirectory;

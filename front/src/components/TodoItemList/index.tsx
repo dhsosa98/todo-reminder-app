@@ -11,6 +11,7 @@ import styled from "styled-components";
 import { selectDirectory, setIsDragging, setToDirectoryId, updateTodoItem, updateTodoItems } from "../../features/directorySlice";
 import { todoItemService } from "../../services/TodoItem";
 import { useSelector } from "react-redux";
+import useDirectory from "../../hooks/useDirectory";
 
 
 type TodoItemListProps = {
@@ -28,7 +29,8 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
 
     const taskCompleted = todoList?.filter((todo) => todo.selected);
 
-    const { toDirectoryId, directoriesEl, isLoading } = useSelector(selectDirectory);
+    const { directoriesEl, isLoading } = useDirectory();
+
 
     const dispatch = useDispatch();
 

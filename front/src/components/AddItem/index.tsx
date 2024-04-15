@@ -15,6 +15,7 @@ import { ITodoItem } from "../../interfaces/TodoItem/ITodoItem";
 import {
   createTodoItemByUser,
   initiaTaskslState,
+  reset as resetTodoItems,
   selectTodoItems,
   setTodoItem,
   updateTodoItemById,
@@ -22,7 +23,9 @@ import {
 import { useDispatch } from "react-redux";
 import directorySlice, {
   createDirectoryByUser,
+  getDirectoryByUser,
   initialDirectoryState,
+  reset as resetDirectory,
   resetError,
   selectDirectory,
   setEditableDirectory,
@@ -37,25 +40,33 @@ import Modal from "../Common/Modal";
 import { IUpdateDirectory } from "../../interfaces/Directory/IUpdateDirectory";
 import EditableNotificationSection from "../EditTodoItem";
 import { updateTodoItem } from "../../services/TodoItem";
+import { successAlert } from "../../utilities/sweetalert";
+import handleErrors from "../../utilities/errors";
 
 type AddItemProps = {
-    handleClose: () => void;
-    type: 'directory' | 'task' | '';
+    handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+    handleChange: (e: SyntheticEvent<any>) => void;
+    type: "task" | "directory";
+    isEdit: boolean;
+    values: any;
+    error: any;
+    status: string;
+    onSended: () => void;
 };
 
 const StyledWrapperSectionAddItem = styled(StyledWrapperSection)`
   display: flex;
 `;
 
-const AddItemModal = ({
-    type,
-    }: {
-    type: 'directory' | 'task' | '';
-}) => {
-
-    const { isOpenedModal: isOpen } = useSelector(selectDirectory);
+const AddItemModal = ({}) => {
 
     const dispatch = useDispatch();
+
+    const { error: errorTask, currentTodoItem, status: statusTask } = useSelector(selectTodoItems);
+
+    const { currentDirectory, editableDirectory, status: statusDirectory, error: errorDirectory, isOpenedModal: isOpen } = useSelector(selectDirectory);
+
+    const isDirectory = editableDirectory?.id || editableDirectory?.id;
 
     useEffect(() => {
         if (isOpen) {
@@ -72,13 +83,92 @@ const AddItemModal = ({
 
     const handleClose = () => {
         dispatch(setIsOpenedModal(false));
-        dispatch(setTodoItem(initiaTaskslState.currentTodoItem));
-        dispatch(setEditableDirectory(initialDirectoryState.editableDirectory));
+    }
+
+    useEffect(() => {
+        if (isDirectory) {
+          setDescription(editableDirectory?.name || "");
+        } else {
+          setDescription(currentTodoItem?.description || "");
+        }
+    }
+    , [editableDirectory?.name, currentTodoItem?.description]);
+
+    const [description, setDescription] = useState<string>(
+        currentTodoItem?.description || editableDirectory?.name || ""
+    );
+
+    const handleSubmitTask = async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (isEdit) {
+        dispatch(
+          updateTodoItemById({
+            ...currentTodoItem,
+            description: description,
+            notification: currentTodoItem?.notification,
+          }) as ActionFromReducer<Partial<ITodoItem>>
+        );
+        return;
+      }
+  
+      dispatch(
+        createTodoItemByUser({
+          description: description,
+          selected: false,
+          directoryId: (editableDirectory?.id as number) || null,
+          notification: currentTodoItem?.notification,
+        }) as ActionFromReducer<ICreateTodoItem>
+      );
     }
 
 
-    
-    
+    const handleSubmitDirectory = async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+  
+        if (isEdit) {
+          dispatch(
+            updateDirectory({
+              name: description,
+              parentId: editableDirectory?.parentId || null,
+              id: editableDirectory?.id!,
+            }) as ActionFromReducer<IUpdateDirectory>
+          );
+          return;
+        }
+        dispatch(
+          createDirectoryByUser({
+            name: description,
+            parentId: currentDirectory?.id || null,
+          }) as ActionFromReducer<ICreateDirectory>
+        );
+        return;
+    };  
+
+    const handleChange = (e: SyntheticEvent<any>) => {
+        const { name, value } = e.currentTarget;
+        setDescription(value);
+    }
+
+    const isEdit = (editableDirectory?.id || currentTodoItem?.id) ? true : false;
+
+    const type = isDirectory ? "directory" : "task";
+
+    const onSendedDirectory = () => {
+        dispatch(resetDirectory());
+        isEdit ? successAlert("The Directory has been Updated Successfully") :
+        successAlert("The Directory has been Created Successfully") 
+        dispatch(getDirectoryByUser() as ActionFromReducer<IDirectory>);
+        handleClose();
+    }
+
+    const onSendedTask = () => {
+        dispatch(resetTodoItems());
+        isEdit ? successAlert("The Task has been Updated Successfully") :
+        successAlert("The Task has been Created Successfully")
+        dispatch(getDirectoryByUser() as ActionFromReducer<IDirectory>);
+        handleClose();
+    }
+
   return (
     <>
       {isOpen && (
@@ -109,7 +199,18 @@ const AddItemModal = ({
               zIndex: 100,
             }}
           >
-            <AddItem handleClose={handleClose} type={type} />
+            <AddItem 
+            type={type} 
+            handleSubmit={type === "task" ? handleSubmitTask : handleSubmitDirectory}
+            handleChange={handleChange}
+            isEdit={isEdit}
+            values={{
+              description: description,
+            }}
+            error={type === "task" ? errorTask : errorDirectory}
+            status={type === "task" ? statusTask : statusDirectory}
+            onSended={type === "task" ? onSendedTask : onSendedDirectory}
+            />
           </div>
         </div>
       )}
@@ -117,75 +218,13 @@ const AddItemModal = ({
   );
 };
 
-const AddItem: FC<AddItemProps> = ({handleClose, type}) => {
+const AddItem: FC<AddItemProps> = ({handleSubmit, handleChange, type, isEdit, values, error, status, onSended}) => {
 
-  const { error, currentTodoItem } = useSelector(selectTodoItems);
-
-  const { editableDirectory, currentDirectory } = useSelector(selectDirectory);
-
-  const directory = currentDirectory as IDirectory;
-
-  const isEdit = editableDirectory?.id || currentTodoItem?.id
-
-  const isDirectory = type === "directory" || editableDirectory?.id;
-
-  const dispatch = useDispatch();
-
-  const [description, setDescription] = useState<string>(editableDirectory?.name || currentTodoItem?.description || "");
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (isDirectory) {
-      if (isEdit) {
-        dispatch(
-          updateDirectory({
-            name: description,
-            parentId: directory.id || null,
-            id: editableDirectory?.id!,
-          }) as ActionFromReducer<IUpdateDirectory>
-        );
-        handleClose();
-        return;
-      }
-      dispatch(
-        createDirectoryByUser({
-          name: description,
-          parentId: directory.id || null,
-        }) as ActionFromReducer<ICreateDirectory>
-      );
-      handleClose();
-      return;
+  useEffect(() => {
+    if (status === "submiteed") {
+      onSended()
     }
-
-    if (isEdit) {
-      dispatch(
-        updateTodoItemById({
-          ...currentTodoItem,
-          description: description,
-          notification: currentTodoItem?.notification,
-        }) as ActionFromReducer<Partial<ITodoItem>>
-      );
-      handleClose();
-      return;
-    }
-
-    dispatch(
-      createTodoItemByUser({
-        description: description,
-        selected: false,
-        directoryId: (directory?.id as number) || null,
-        notification: currentTodoItem?.notification,
-      }) as ActionFromReducer<ICreateTodoItem>
-    );
-
-    handleClose();
-  };
-
-  const handleChange = (e: SyntheticEvent<any>) => {
-    const { value } = e.currentTarget;
-    setDescription(value);
-  };
+  }, [status]);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -193,25 +232,22 @@ const AddItem: FC<AddItemProps> = ({handleClose, type}) => {
     inputRef.current?.focus();
   }, []);
 
-
   return (
     <StyledWrapperSectionAddItem>
-      <StyledH3>{isEdit ? "Edit" : `Add`} {isDirectory ? "Directory" : "Task"}</StyledH3>
+      <StyledH3>{isEdit ? "Edit" : `Add`} {type==="directory" ? "Directory" : "Task"}</StyledH3>
       <AddItemForm onSubmit={handleSubmit}>
-        <StyledLabel htmlFor="description">{isDirectory ? "Name" : "Description"}</StyledLabel>
+        <StyledLabel htmlFor="description">{type==="directory" ? "Name" : "Description"}</StyledLabel>
         <StyledDescriptionInput
           name="description"
-          value={description}
+          value={values.description}
           rows={5}
           onChange={handleChange}
         />
-        {(type === "task" || !!currentTodoItem) && (
-            <EditableNotificationSection />
-        )}
+        {type === "task" && <EditableNotificationSection />}
         <StyledFlextContainer>
           <StyledAddButton type="submit">{isEdit ? "Edit" : "Add"}</StyledAddButton>
         </StyledFlextContainer>
-        {error && <StyledErrorParagraph>{error}</StyledErrorParagraph>}
+        {error && <StyledErrorParagraph>{error.message}</StyledErrorParagraph>}
       </AddItemForm>
     </StyledWrapperSectionAddItem>
   );

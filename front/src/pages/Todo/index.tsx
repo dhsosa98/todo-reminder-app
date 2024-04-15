@@ -34,7 +34,7 @@ const Todo: FC = () => {
 
   const navigate = useNavigate();
   
-  const { search, updateSearch } = useSearch();
+  const { search } = useSearch();
 
   const {currentDirectory, isLoading, error} = useDirectory(Number(id) || null);
 
@@ -51,10 +51,8 @@ const Todo: FC = () => {
 
   const dispatch = useDispatch();
 
-  const [type, setType] = useState<'directory' | 'task' | ''>('');
 
-  const handleAddItem = (type: 'directory' | 'task' | '') => {
-    setType(type);
+  const handleAddItem = () => {
     dispatch(setIsOpenedModal(true));
   }
 
@@ -171,7 +169,7 @@ const Todo: FC = () => {
           </StatsContainer>
         </StyledDiv>
         )}
-        <AddItemModal type={type} />
+        <AddItemModal/>
         {isLoading ? (
           <Loader />
         ) : (
