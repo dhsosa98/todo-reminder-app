@@ -110,8 +110,12 @@ const Header: FC<any> = ({children}) => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-  },[])
+    // Start the interval
+    const intervalId = setInterval(fetchNotifications, 2000);
+  
+    // When the component unmounts, clear the interval
+    return () => clearInterval(intervalId);
+  }, []);
 
   const readNotifications = notifications.filter((notification) => notification.read === false);
 

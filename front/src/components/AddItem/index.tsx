@@ -15,7 +15,7 @@ import { ITodoItem } from "../../interfaces/TodoItem/ITodoItem";
 import {
   createTodoItemByUser,
   initiaTaskslState,
-  reset as resetTodoItems,
+  reset as resetTodoItem,
   selectTodoItems,
   setTodoItem,
   updateTodoItemById,
@@ -51,7 +51,7 @@ type AddItemProps = {
     values: any;
     error: any;
     status: string;
-    onSended: () => void;
+    onSended?: () => void;
 };
 
 const StyledWrapperSectionAddItem = styled(StyledWrapperSection)`
@@ -66,7 +66,7 @@ const AddItemModal = ({}) => {
 
     const { currentDirectory, editableDirectory, status: statusDirectory, error: errorDirectory, isOpenedModal: isOpen } = useSelector(selectDirectory);
 
-    const isDirectory = editableDirectory?.id || editableDirectory?.id;
+    const isDirectory = editableDirectory?.id || !!editableDirectory;
 
     useEffect(() => {
         if (isOpen) {
@@ -83,7 +83,17 @@ const AddItemModal = ({}) => {
 
     const handleClose = () => {
         dispatch(setIsOpenedModal(false));
+        dispatch(resetTodoItem());
+        dispatch(resetDirectory());
     }
+
+    useEffect(() => {
+      if (errorTask || errorDirectory) {
+        dispatch(
+          setIsOpenedModal(true)
+        )
+      }
+    }, [errorTask, errorDirectory]);
 
     useEffect(() => {
         if (isDirectory) {
@@ -108,6 +118,7 @@ const AddItemModal = ({}) => {
             notification: currentTodoItem?.notification,
           }) as ActionFromReducer<Partial<ITodoItem>>
         );
+        onSendedTask();
         return;
       }
   
@@ -119,6 +130,7 @@ const AddItemModal = ({}) => {
           notification: currentTodoItem?.notification,
         }) as ActionFromReducer<ICreateTodoItem>
       );
+      onSendedTask();
     }
 
 
@@ -133,6 +145,7 @@ const AddItemModal = ({}) => {
               id: editableDirectory?.id!,
             }) as ActionFromReducer<IUpdateDirectory>
           );
+          onSendedDirectory();
           return;
         }
         dispatch(
@@ -141,6 +154,7 @@ const AddItemModal = ({}) => {
             parentId: currentDirectory?.id || null,
           }) as ActionFromReducer<ICreateDirectory>
         );
+        onSendedDirectory();
         return;
     };  
 
@@ -154,18 +168,10 @@ const AddItemModal = ({}) => {
     const type = isDirectory ? "directory" : "task";
 
     const onSendedDirectory = () => {
-        dispatch(resetDirectory());
-        isEdit ? successAlert("The Directory has been Updated Successfully") :
-        successAlert("The Directory has been Created Successfully") 
-        dispatch(getDirectoryByUser() as ActionFromReducer<IDirectory>);
         handleClose();
     }
 
     const onSendedTask = () => {
-        dispatch(resetTodoItems());
-        isEdit ? successAlert("The Task has been Updated Successfully") :
-        successAlert("The Task has been Created Successfully")
-        dispatch(getDirectoryByUser() as ActionFromReducer<IDirectory>);
         handleClose();
     }
 
@@ -209,7 +215,6 @@ const AddItemModal = ({}) => {
             }}
             error={type === "task" ? errorTask : errorDirectory}
             status={type === "task" ? statusTask : statusDirectory}
-            onSended={type === "task" ? onSendedTask : onSendedDirectory}
             />
           </div>
         </div>
@@ -218,13 +223,7 @@ const AddItemModal = ({}) => {
   );
 };
 
-const AddItem: FC<AddItemProps> = ({handleSubmit, handleChange, type, isEdit, values, error, status, onSended}) => {
-
-  useEffect(() => {
-    if (status === "submiteed") {
-      onSended()
-    }
-  }, [status]);
+const AddItem: FC<AddItemProps> = ({handleSubmit, handleChange, type, isEdit, values, error, status}) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 

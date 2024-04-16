@@ -8,12 +8,8 @@ import { RootState } from "../app/store";
 import { ICreateDirectory } from "../interfaces/Directory/ICreateDirectory";
 import { IDirectory } from "../interfaces/Directory/IDirectory";
 import {directoryService} from "../services/directories";
-import handleErrors from "../utilities/errors";
-import { deleteAlert, successAlert } from "../utilities/sweetalert";
+import { deleteAlert, errorAlert, successAlert } from "../utilities/sweetalert";
 import { ITodoItem } from "../interfaces/TodoItem/ITodoItem";
-import { IUpdateDirectory } from "../interfaces/Directory/IUpdateDirectory";
-import {setSearch, todoItemsSlice} from "./todoItemsSlice";
-import store from "../app/store";
 import { AxiosError } from "axios";
 import handleHttpErrors from "../utilities/http/handleErrors";
 
@@ -29,34 +25,77 @@ export const getDirectoriesByUser = createAsyncThunk<IDirectory[]>(
   }
 );
 
-export const updateDirectory = createAsyncThunk<void, Partial<IDirectory>>(
+export const updateDirectory = createAsyncThunk<void, Partial<IDirectory>, {state: RootState}>(
   "directories/updateDirectory",
-  async (directory) => {
+  async (directory, {getState, dispatch}) => {
+    const { currentDirectory } = getState().directory;
+    const prevDirectory = currentDirectory?.children?.find((dir) => dir.id === directory.id);
+    if (currentDirectory?.id !== directory.parentId) {
+      dispatch(remove(directory.id!))
+    }
+    else {
+      if (prevDirectory) {
+        dispatch(updateChildrenDir({id: directory.id!, dir: {
+          ...prevDirectory!,
+          ...directory,
+        }}))
+      }
+    }
     try {
       await directoryService.updateDirectory(directory.id!, directory);
+      await successAlert("Directory updated successfully");
     } catch (err: any) {
+      if (prevDirectory) dispatch(add(prevDirectory));
+      errorAlert("Directory update failed. Please try again");
       handleHttpErrors(err);
     }
   }
 );
 
-export const createDirectoryByUser = createAsyncThunk<void, ICreateDirectory>(
+export const createDirectoryByUser = createAsyncThunk<void, ICreateDirectory, {state: RootState}>(
   "directories/createDirectory",
-  async (directory) => {
+  async (directory, {getState, dispatch}) => {
+    const { currentDirectory } = getState().directory;
+    const id = Math.floor(Math.random() * 10000);
+    if (currentDirectory?.id === directory.parentId) {
+      dispatch(add({
+        id,
+        ...directory,
+      }))
+    }
     try {
-      await directoryService.createDirectory(directory);
+      const {data} = await directoryService.createDirectory(directory);
+      await successAlert("Directory created successfully");
+      dispatch(updateChildrenDir({id, dir: data}));
     } catch (err: any) {
+      await errorAlert("Directory create failed. Please try again");
+      dispatch(remove(id));
       handleHttpErrors(err);
     }
   }
 );
 
-export const deleteDirectoryById = createAsyncThunk<void, number>(
+export const deleteDirectoryById = createAsyncThunk<void, number, {state: RootState}>(
   "directories/deleteDirectory",
-  async (id) => {
+  async (id, {getState, dispatch}) => {
+    try{
+      const result = await deleteAlert(
+        "Are you sure you want to delete this Directory?",
+      );
+      if (!result.isConfirmed) return;
+    }
+    catch(err: any) {}
+    const { currentDirectory } = getState().directory;
+    const dir = currentDirectory?.children?.find((directory) => directory.id === id);
+    if (currentDirectory?.id === dir?.parentId) {
+      dispatch(remove(id!))
+    }
     try {
       await directoryService.deleteDirectory(id);
+      await successAlert("Directory deleted successfully");
     } catch (err: any) {
+      if (dir) dispatch(add(dir));
+      errorAlert("Directory delete failed. Please try again");
       handleHttpErrors(err);
     }
   }
@@ -150,6 +189,23 @@ export const directorySlice = createSlice({
     },
     setDirectoriesEl: (state, action: PayloadAction<any>) => {
       state.directoriesEl = action.payload;
+    },
+    updateChildrenDir: (state, action: PayloadAction<{
+      id: number,
+      dir: IDirectory,
+    }>) => {
+      state.currentDirectory.children = state.currentDirectory?.children?.map((directory) => {
+        if (directory.id === action.payload.id) {
+          return action.payload.dir;
+        }
+        return directory;
+      });
+    },
+    remove: (state, action: PayloadAction<number>) => {
+      state.currentDirectory.children = state?.currentDirectory?.children?.filter((directory) => directory.id !== action.payload);
+    },
+    add: (state, action: PayloadAction<IDirectory>) => {
+      state.currentDirectory?.children?.push(action.payload);
     }
   },
   extraReducers: (builder) => {
@@ -197,6 +253,7 @@ export const directorySlice = createSlice({
       updateDirectory.fulfilled,
       (state, action) => {
         state.status = "submiteed";
+        state.editableDirectory = null;
       }
     );
     builder.addCase(
@@ -216,6 +273,7 @@ export const directorySlice = createSlice({
       createDirectoryByUser.fulfilled,
       (state, action) => {
         state.status = "submiteed";
+        state.editableDirectory = null;
       }
     );
     builder.addCase(
@@ -255,6 +313,6 @@ export const directorySlice = createSlice({
 
 export const selectDirectory = (state: RootState) => state.directory;
 
-export const { reset, setError, resetError, setToDirectoryId, setCurrentDirectory, updateTodoItem, updateTodoItems, setIsDragging, setIsOpenedModal, setEditableDirectory, setDirectoriesEl } = directorySlice.actions;
+export const { reset, remove, updateChildrenDir, add, setError, resetError, setToDirectoryId, setCurrentDirectory, updateTodoItem, updateTodoItems, setIsDragging, setIsOpenedModal, setEditableDirectory, setDirectoriesEl } = directorySlice.actions;
 
 export default directorySlice.reducer;

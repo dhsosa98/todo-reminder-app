@@ -18,8 +18,25 @@ export class DirectoryService {
     private todoitemsService: TodoItemService,
   ) {}
 
-  async findAll(userId: number): Promise<Directory[]> {
-    return this.directoryRepository.findAll({ where: { [Op.and]: [{ userId }, {parentId: null}] } });
+  async findAll(userId: number, search?: string): Promise<Directory[]> {
+    return this.directoryRepository.findAll({ 
+      where: { [Op.and]: [{ userId },           
+      search && { name: { [Op.like]: `%${search.trim()}%` } },
+  ] }
+    });
+  }
+
+  async findByCriteria(userId: number, search?: string): Promise<{
+    directories: Directory[],
+    todoItems: TodoItem[],
+  }> {
+    const directories = await this.directoryRepository.findAll({
+      where: { [Op.and]: [{ userId }, { name: { [Op.like]: `%${search.trim()}%` } }] },
+    });
+    const todoItems = await this.todoitemsRepository.findAll<TodoItem>({
+      where: { userId, description: { [Op.like]: `%${search.trim()}%` } },
+    });
+    return { directories, todoItems };
   }
 
   async getBaseDirectories(userId: number): Promise<Directory> {
@@ -28,6 +45,7 @@ export class DirectoryService {
     });
     const todoItems = await this.todoitemsRepository.findAll<TodoItem>({
       where: { userId, directoryId: null },
+      order: [['order', 'ASC']],
     });
     const directory: any = {};
     directory.id = null;

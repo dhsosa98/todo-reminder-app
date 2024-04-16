@@ -24,6 +24,8 @@ import useTodoItem from "../../hooks/useTodoItem";
 import dragSrc from '/drag.svg';
 import { setIsOpenedModal } from "../../features/directorySlice";
 import handleErrors from "../../utilities/errors";
+import useSearch from "../../hooks/useSearch";
+import { selectSearch } from "../../features/searchSlice";
 
 interface TodoItemProps {
   item: ITodoItem;
@@ -51,7 +53,6 @@ const TodoItem: FC<TodoItemProps> = ({ item, draggingId, groupIds }) => {
 
   const handleDelete = async () => {
     dispatch(deleteTodoItemById(item?.id) as ActionFromReducer<number>);
-    await successAlert("The TodoItem has been Deleted Successfully");
   };
 
   const lastUpdateText = new Date(item?.updatedAt).toLocaleString('en-US', {
@@ -97,9 +98,12 @@ const TodoItem: FC<TodoItemProps> = ({ item, draggingId, groupIds }) => {
     dispatch(setIsOpenedModal(true));
   }
 
+
+  const { search } = useSelector(selectSearch)
+
   return (
     <StyledCard isDragZone={isBelongsToGroup} isDraggignId={draggingId===item.id} id={'task-'+item.id}>
-      <DragIcon className="drag-handle" src={dragSrc} style={{width: "20px", height: "20px"}}/>
+      {!search && <DragIcon className="drag-handle" src={dragSrc} style={{width: "20px", height: "20px"}}/>}
       <TodoItemContainer>
       <RighTopCorner ref={menuRef}>
         <Icon className="fi fi-bs-menu-dots-vertical" onClick={

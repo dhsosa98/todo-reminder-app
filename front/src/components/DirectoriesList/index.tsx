@@ -3,21 +3,67 @@ import { IDirectory } from "../../interfaces/Directory/IDirectory";
 import { StyledDeleteButton, StyledEditButton, StyledH3 } from "../Common/Styled-components";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { deleteDirectoryById, selectDirectory, setDirectoriesEl, setEditableDirectory, setIsDragging, setIsOpenedModal, setToDirectoryId, updateDirectory } from "../../features/directorySlice";
+import { deleteDirectoryById, reset, selectDirectory, setDirectoriesEl, setEditableDirectory, setIsDragging, setIsOpenedModal, setToDirectoryId, updateDirectory } from "../../features/directorySlice";
 import { ActionFromReducer } from "redux";
 import { useDispatch } from "react-redux";
 import NotFound from "../NotFound";
 import { useSelector } from "react-redux";
 import dragSrc from '/drag.svg';
 import { ref } from "yup";
-import { DNDPlugin, addEvents, animations, parents } from "@formkit/drag-and-drop";
+import { DNDPlugin, addEvents, animations, eventCoordinates, handleDragoverNode, handleDragstart, handleEnd, handleTouchOverNode, handleTouchmove, handleTouchstart, parents, setupNode, state, SetupNodeData, NodeEventData } from "@formkit/drag-and-drop";
 import { useDragAndDrop } from "@formkit/drag-and-drop/react";
-import { deleteAlert } from "../../utilities/sweetalert";
+import { deleteAlert, successAlert } from "../../utilities/sweetalert";
+import useSearch from "../../hooks/useSearch";
+import { selectSearch } from "../../features/searchSlice";
 
 type DirectoriesListProps = {
     directories: IDirectory[];
-    handleAddItem: (type: 'directory' | 'task') => void;
+    handleAddItem: () => void;
     foldersContainerRef: React.RefObject<HTMLDivElement>;
+}
+
+function validateDragHandle<T>(data: NodeEventData<T>): boolean {
+  if (!(data.e instanceof DragEvent) && !(data.e instanceof TouchEvent))
+    return false;
+
+  const config = data.targetData.parent.data.config;
+
+  if (!config.dragHandle) return true;
+
+  const dragHandles = data.targetData.node.el.querySelectorAll(
+    config.dragHandle
+  );
+
+  if (!dragHandles) return false;
+
+  const coordinates = eventCoordinates(data.e);
+
+  const elFromPoint = config.root.elementFromPoint(
+    coordinates.x,
+    coordinates.y
+  );
+
+  if (!elFromPoint) return false;
+
+  for (const handle of Array.from(dragHandles)) {
+    if (elFromPoint === handle || handle.contains(elFromPoint)) return true;
+  }
+
+  return false;
+}
+
+function eventEndCoordinates(e: MouseEvent | TouchEvent) {
+  if (e instanceof MouseEvent) {
+    return {
+      x: e.clientX,
+      y: e.clientY,
+    };
+  } else {
+    return {
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY,
+    };
+  }
 }
 
 const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, foldersContainerRef}) => {
@@ -25,8 +71,6 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
     const {id} = useParams();
 
     const isHome = id === undefined;
-
-  //   const [draggingId, setDraggingId] = useState<number | null>(null);
 
     const dispatch = useDispatch();
 
@@ -49,211 +93,56 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
       return null
     }
 
-  //   const dragStatusPlugin: DNDPlugin = (parent) => {
-
-  //     const parentData = parents.get(parent);
-  //     if (!parentData) return;
-
-  //     function dragstart(event: DragEvent) {
-  //       dispatch(
-  //         setToDirectoryId(null)
-  //       );
-  //       const node = event.target as HTMLElement;
-  //       if (node.id === "no-drag") return;
-  //       if (!node.classList.contains("drag-handle")) return;
-  //       const prevElement = getPrevElement(node, parent);
-  //       if (!prevElement) return;
-  //       const id = Number(prevElement.getAttribute("id")?.split("-")[1]);
-  //       setDraggingId(id);
-  //       const dragImage = prevElement.cloneNode(true) as HTMLElement;
-  //       dragImage.style.width = "200px";
-  //       dragImage.className = "drag-image";
-  //       document.body.appendChild(dragImage);
-  //       event?.dataTransfer?.setDragImage(dragImage, 0, 0);
-  //       document.body.style.cursor = "grabbing";
-  //     }
-
-  //     const touchstart = (event: TouchEvent) => {
-  //       dispatch(
-  //         setToDirectoryId(null)
-  //       );
-  //       const node = event.target as HTMLElement;
-  //       if (node.id === "no-drag") return;
-  //       if (!node.classList.contains("drag-handle")) return;
-  //       const prevElement = getPrevElement(node, parent);
-  //       if (!prevElement) return;
-  //       const id = Number(prevElement.getAttribute("id")?.split("-")[1]);
-  //       setDraggingId(id);
-  //       document.body.style.cursor = "grabbing";
-  //     }
-
-  //     function dragend(event: DragEvent) {
-  //       document.querySelectorAll(".drag-image").forEach((node) => {
-  //         node.remove();
-  //       });
-  //       if (event?.dataTransfer?.dropEffect !== 'none') {          
-  //         // handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
-  //       }
-  //       dispatch(
-  //         setToDirectoryId(null)
-  //       );
-  //       setDraggingId(null);
-  //       document.body.style.cursor = "auto";
-  //     }
-
-  //     const touchend = (event: TouchEvent) => {
-  //       // handleEnd({e: event, targetData: parentData?.getValues(parent), parent});
-  //       setDraggingId(null);
-  //       document.body.style.cursor = "auto";
-  //     }
-
-  //     return {
-  //       setup() {},
-  //       teardown() {},
-  //       setupNode(data) {
-  //         data.nodeData.abortControllers.customPlugin = addEvents(data.node, {
-  //           dragstart: dragstart,
-  //           dragend: dragend,
-  //           touchstart: touchstart,
-  //           touchend: touchend,
-  //         });
-  //       },
-  //       tearDownNode(data) {
-  //         if (data.nodeData?.abortControllers?.customPlugin) {
-  //           data.nodeData?.abortControllers?.customPlugin.abort();
-  //         }
-  //       },
-  //       setupNodeRemap() {},
-  //       tearDownNodeRemap() {},
-  //     };
-
-  // };
-
-  const makeACopy = (e: TouchEvent, targetData: any) => {
-    const node = targetData.node.el;
-    const dragImage = node.cloneNode(true) as HTMLElement;
-    dragImage.classList.add("drag-image");
-    dragImage.style.position = "absolute";
-    dragImage.style.animation = 'none';
-    dragImage.style.inlineSize = node.offsetWidth + "px";
-    document.body.appendChild(dragImage);
-
-    const rect = dragImage.getBoundingClientRect();
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-    dragImage.style.top = e.changedTouches[0].clientY + scrollTop - 40  + "px";
-    dragImage.style.left = e.changedTouches[0].clientX + scrollLeft - 20  + "px";
-    document.body.style.cursor = "grabbing";
-  }
-
-  const [ref, dirs, _setValues, updateConfig] = useDragAndDrop<HTMLDivElement, IDirectory>(directories, {
+  const [ref, dirs, _setValues] = useDragAndDrop<HTMLDivElement, IDirectory>(directories, {
       group: "directories",
       sortable: false,
       dragHandle: ".drag-handle",
       draggable: (el) => {
         return el.id !== "no-drag";
       },  
-      handleDragstart: ({e, targetData}) => {
+      handleDragstart: (data) => {
         dispatch(
           setToDirectoryId(undefined)
         ); 
-        const fromElem = document.elementFromPoint(e.clientX, e.clientY);
-        if (!fromElem?.classList.contains("drag-handle")) {
-          e.preventDefault();
-          return;
-        }
-        dispatch(
-          setIsDragging(true)
-        )
-        const node = targetData.node.el;
-        const dragImage = node.cloneNode(true) as HTMLElement;
-        node.style.opacity = "0.5";
-        dragImage.style.inlineSize = node.offsetWidth + "px";
-        dragImage.style.position = "fixed"
-        dragImage.style.animation = 'none';
-        dragImage.style.pointerEvents = "none";
-        dragImage.style.zIndex = "9999";
-        dragImage.style.top = -1000 + "px";
-        dragImage.style.left = -1000 + "px";
-        dragImage.classList.add("drag-image");
-        document.body.appendChild(dragImage);
-        e?.dataTransfer?.setDragImage(dragImage, 0, 0);
-        document.body.style.cursor = "grabbing";
+        handleDragstart(data);
+        if (!validateDragHandle(data)) return;
       },
-      handleTouchstart: ({e, targetData}) => {
-        const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-        if (!fromElem) return;
-        if (!fromElem?.classList.contains("drag-handle")) {
-          dispatch(
-            setToDirectoryId(undefined)
-          );
-          return;
-        }
-        makeACopy(e, targetData);
+      handleTouchstart: (data) => {
+        handleTouchstart(data);
         dispatch(
           setToDirectoryId(undefined)
         );
+        if (!validateDragHandle(data)) return;
         dispatch(
           setIsDragging(true)
         )
       },
-      handleTouchmove: ({e, targetData}) => {
-        e.preventDefault();
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        const dragImage = document.querySelector(".drag-image") as HTMLElement;
-        if (!dragImage) return;
-
-        dragImage.style.top = e.changedTouches[0].clientY + scrollTop - 40 + "px";
-        dragImage.style.left = e.changedTouches[0].clientX + scrollLeft - 20 + "px";
-        dragImage.style.pointerEvents = "none";
-
-        const toElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-        const el = getPrevElement(toElement as HTMLElement, targetData.parent.el);
-        const toId = targetData.parent.data.enabledNodes.find((node) => node.el === el)?.data.value.id;
-        if (toId === targetData.node.data.value.id) return;
+      handleTouchOverNode: (data) => {
+        handleTouchOverNode(data);
+        const toId = data.detail.targetData.node.data.value.id;
         dispatch(
           setToDirectoryId(toId)
         );
       },
       handleDragoverNode({e, targetData}) {
+        handleDragoverNode({e, targetData});
         const toId = targetData.node.data.value.id;
         dispatch(
           setToDirectoryId(toId)
         );
       },
       handleEnd: ({e, targetData}) => {
-        document.querySelectorAll(".drag-image").forEach((node) => {
-          node.remove();
-        });
-        document.body.style.cursor = "auto";
+        handleEnd({e, targetData});
         dispatch(
           setIsDragging(false)
         );
         dispatch(
           setToDirectoryId(undefined)
         );
-        // if (e instanceof TouchEvent) {
-        //   const fromElem = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-        //   console.log({fromElem});
-        //   if (!fromElem?.classList.contains("drag-handle")) {
-        //     return;
-        //   }
-        // }
-        let dropElement: Element | null = null;
-        const parent = targetData.parent.el;
-        if (e instanceof MouseEvent) {
-          const isNone = e?.dataTransfer?.dropEffect === 'none'
-          if (isNone) return;
-        }
-        if (e instanceof MouseEvent) {
-          dropElement = document.elementFromPoint(e.clientX, e.clientY);
-        } else if (e instanceof TouchEvent && e.changedTouches.length > 0) {
-          dropElement = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-        }
-        const toElement = getPrevElement(dropElement as HTMLElement, parent);
+        const config = targetData.parent.data.config;
+        const coordinates = eventEndCoordinates(e);
+        let toElement = config.root.elementFromPoint(coordinates.x, coordinates.y);  
+        toElement = getPrevElement(toElement as HTMLElement, targetData.parent.el);
         if (!toElement) return;
         const toId = targetData.parent.data.enabledNodes.find((node) => node.el === toElement)?.data.value.id;
         const fromId = targetData.node.data.value.id;
@@ -284,7 +173,12 @@ const DirectoriesList: FC<DirectoriesListProps> = ({directories, handleAddItem, 
             <NotFound title="Directory" text="Add one with button below" />
         )} */}
         <TodosContainer ref={ref}>
-          <AddNewDirectoryCard id="no-drag" isDragging={false} onClick={() => handleAddItem('directory')}>
+          <AddNewDirectoryCard id="no-drag" isDragging={false} onClick={() => {
+            dispatch(
+              setEditableDirectory({} as IDirectory)
+            );
+            handleAddItem()
+          }}>
             <i className="fi fi-rr-add"></i>
             <p>Add a new Directory</p>
           </AddNewDirectoryCard>
@@ -310,10 +204,6 @@ const Directory = ({directory, onClick}: any) => {
 
   const handleDelete = async (e: any, id: number) => {
       e.stopPropagation();
-      await deleteAlert(
-        "Are you sure you want to delete this Directory?",
-        "The Directory has been deleted Successfully"
-      );
       dispatch(deleteDirectoryById(id) as ActionFromReducer<IDirectory[]>);
   };
 
@@ -344,11 +234,13 @@ const Directory = ({directory, onClick}: any) => {
     };
   }, [menuRef]);
 
+  const { search } = useSelector(selectSearch)
+
     return (
       <StyledCard isToDirectory={toDirectoryId===directory.id} isDragging={isDragging} key={directory?.id} id={"directory-" + directory?.id} onClick={
         () => navigate(`/directories/${directory?.id || ''}`)
       }>
-      {directory.id && <DragIcon className="drag-handle" src={dragSrc} style={{width: "20px", height: "20px"}}/>}
+      {!search && directory.id && <DragIcon className="drag-handle" src={dragSrc} style={{width: "20px", height: "20px"}}/>}
       <RighTopCorner ref={menuRef}>
         <Icon className="fi fi-bs-menu-dots-vertical" onClick={
           (event) => {
@@ -370,14 +262,6 @@ const Directory = ({directory, onClick}: any) => {
           {directory?.name}
         </StyledName>
       </CardHeader>
-      {/* <ActionsContainer >
-        <Link to={`/directories/${directory?.id}`}>
-          <StyledEditButton>View Details</StyledEditButton>
-        </Link>
-        <StyledDeleteButton onClick={() => handleDelete(directory?.id as number)}>
-          Delete
-        </StyledDeleteButton>
-      </ActionsContainer> */}
     </StyledCard>
     )
 }

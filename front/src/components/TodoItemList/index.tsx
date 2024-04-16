@@ -5,7 +5,7 @@ import { ITodoItem } from "../../interfaces/TodoItem/ITodoItem";
 import { updateSelected, updateTodoItemById, updateTodoItemOrder } from "../../features/todoItemsSlice";
 import { useDispatch } from "react-redux";
 import { ActionFromReducer } from "redux";
-import { useDragAndDrop } from "@formkit/drag-and-drop/react";
+import { useDragAndDrop  } from "@formkit/drag-and-drop/react";
 import { DNDPlugin, addEvents, animations, parents } from "@formkit/drag-and-drop";
 import styled from "styled-components";
 import { selectDirectory, setIsDragging, setToDirectoryId, updateTodoItem, updateTodoItems } from "../../features/directorySlice";
@@ -60,14 +60,14 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       } 
     }
 
-    useEffect(() => {
-      window.addEventListener('dragover', dragover);
-      window.addEventListener('touchmove', touchmove);
-      return () => {
-        window.removeEventListener('dragover', dragover);
-        window.removeEventListener('touchmove', touchmove);
-      }
-    }, []);
+    // useEffect(() => {
+    //   window.addEventListener('dragover', dragover);
+    //   window.addEventListener('touchmove', touchmove);
+    //   return () => {
+    //     window.removeEventListener('dragover', dragover);
+    //     window.removeEventListener('touchmove', touchmove);
+    //   }
+    // }, []);
 
     useEffect(() => {
       dispatch(setIsDragging(!!draggingId));
@@ -202,6 +202,7 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
         order: index
       }
     });
+    console.log("sortedTodos", sortedTodos);
     let dropElement: Element | null = null;
     if (e instanceof MouseEvent) {
       dropElement = document.elementFromPoint(e.clientX, e.clientY);
@@ -217,14 +218,11 @@ const TodoItemList: FC<TodoItemListProps> = ({todoList, handleAddItem, foldersCo
       const newDirectoryId = Number(prevElement?.getAttribute("id")?.split("-")[1]);
       const todoItem = todoList.find((todo) => todo.id === id)!;
       dispatch(
-        updateTodoItem({
-          ...todoItem,
+        updateTodoItemById({
+          id: todoItem.id,
           directoryId: newDirectoryId
         }) as ActionFromReducer<ITodoItem>
       );
-      todoItemService.updateTodoItem(id, {
-        directoryId: newDirectoryId
-      } as ITodoItem);
     }
     handleSort(sortedTodos)
   }

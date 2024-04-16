@@ -1,10 +1,13 @@
 import styled from "styled-components";
 import { StyledWrapperSection } from "../Common/Styled-components";
 import { FC, useRef } from "react";
+import { useDispatch } from "react-redux";
+import { selectSearch, setSearch } from "../../features/searchSlice";
+import { useSelector } from "react-redux";
 
 type SearchBarProps = {
-    search: string;
-    handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    search?: string;
+    handleSearch?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const WrapperSearchSection = styled(StyledWrapperSection)`
@@ -13,7 +16,12 @@ const WrapperSearchSection = styled(StyledWrapperSection)`
     background-color: transparent;
 `;
 
-const SearchBar: FC<SearchBarProps> = ({search, handleSearch}) => {
+const SearchBar: FC<SearchBarProps> = () => {
+  const dispatch = useDispatch();
+  const { search } = useSelector(selectSearch);
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setSearch(e.target.value));
+  }
   const containerRef = useRef<HTMLDivElement>(null);
     return (
         <>

@@ -17,7 +17,14 @@ export class DirectoryController {
 
   @Get()
   getDirectories(@Request() req) {
-    return this.directoriesService.findAll(req.user.userId);
+    const search = req.query.search as string;
+    return this.directoriesService.findAll(req.user.userId, search);
+  }
+
+  @Get('search')
+  getBySearchDirectories(@Request() req) {
+    const search = req.query.q as string;
+    return this.directoriesService.findByCriteria(req.user.userId, search);
   }
 
   @Get(':id/tree')

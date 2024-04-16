@@ -5,8 +5,12 @@ import { IUpdateDirectory } from "../interfaces/Directory/IUpdateDirectory";
 import API_URL from "../vite-env.d";
 const baseURL = `${API_URL}api/directories`;
 
-const getDirectories = async () => {
-    return await Axios.get(baseURL)
+const getDirectories = async (search?: string) => {
+    return await Axios.get(baseURL+`?${search ? `search=${search}` : ""}`)
+}
+
+const getBySearchDirectories = async (search: string) => {
+    return await Axios.get(baseURL+`/search?${search ? `q=${search}` : ""}`)
 }
 
 const createDirectory = async (directory: ICreateDirectory) => {
@@ -43,6 +47,7 @@ const updateDirectory = async (id: number, directory: Partial<IDirectory>) => {
 
 export const directoryService = {
     getDirectories,
+    getBySearchDirectories,
     createDirectory,
     updateDirectory,
     deleteDirectory,

@@ -34,20 +34,11 @@ const Todo: FC = () => {
 
   const navigate = useNavigate();
   
-  const { search } = useSearch();
+  const { search, data, updateSearch } = useSearch();
 
   const {currentDirectory, isLoading, error} = useDirectory(Number(id) || null);
 
   const { children, todoItem } = currentDirectory;
-
-  const todoListFiltered = todoItem?.filter((item) => {
-    return item.description.toLowerCase().includes(search.toLowerCase());
-  });
-
-
-  const subDirectoriesFiltered = children?.filter((item) => {
-    return item.name.toLowerCase().includes(search.toLowerCase());
-  });
 
   const dispatch = useDispatch();
 
@@ -87,6 +78,19 @@ const Todo: FC = () => {
     );
   }
 
+  if (search) {
+    return (
+      <StyledCenterContainer>
+        <StyledH1>Search Results</StyledH1>
+        <StyledDiv>
+          <AddItemModal/>
+          <DirectoriesList directories={data?.directories} handleAddItem={handleAddItem} foldersContainerRef={foldersContainerRef}/>
+          <TodoItemList todoList={data?.todoItems} handleAddItem={handleAddItem} foldersContainerRef={foldersContainerRef}/>
+        </StyledDiv>
+      </StyledCenterContainer>
+    );
+  }
+
   return (
     <StyledCenterContainer>
       {/* <StyledH1>{currentDirectory.name}</StyledH1> */}
@@ -96,7 +100,7 @@ const Todo: FC = () => {
           <BreadCrumb />
         </Header>
         {/* <SearchBar search={search} handleSearch={handleSearch} /> */}
-        {!isLoading && !search && (
+        {!isLoading && (
           <StyledDiv>
           <h2>Stats</h2>
           <StatsContainer>
@@ -174,8 +178,8 @@ const Todo: FC = () => {
           <Loader />
         ) : (
             <StyledDiv>
-              <DirectoriesList directories={subDirectoriesFiltered ?? []} handleAddItem={handleAddItem} foldersContainerRef={foldersContainerRef}/>
-              <TodoItemList todoList={todoListFiltered ?? []} handleAddItem={handleAddItem} foldersContainerRef={foldersContainerRef}/>
+              <DirectoriesList directories={currentDirectory.children ?? []} handleAddItem={handleAddItem} foldersContainerRef={foldersContainerRef}/>
+              <TodoItemList todoList={currentDirectory.todoItem ?? []} handleAddItem={handleAddItem} foldersContainerRef={foldersContainerRef}/>
             </StyledDiv>
         )}
       </>

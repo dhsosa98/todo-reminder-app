@@ -12,7 +12,7 @@ const useDirectory = (
 ) => {
     const { currentDirectory, error, status, ...rest } = useSelector(selectDirectory);
 
-    const isLoading = status === "loading";
+    const isLoading = false && status === "loading";
 
     const dispatch = useDispatch();
 

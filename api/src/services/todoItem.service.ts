@@ -105,7 +105,6 @@ export class TodoItemService {
     id: number,
     todoItem: TodoItemDto,
   ): Promise<TodoItem> {
-    console.log('update', todoItem);
     // const { description, selected, notification } = todoItem;
     const result = await this.todoItemRepository.findOne<TodoItem>({
       where: { [Op.and]: [{ id }, { userId }] },

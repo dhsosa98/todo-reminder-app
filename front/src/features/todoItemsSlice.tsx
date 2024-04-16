@@ -1,14 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ITodoItem } from "../interfaces/TodoItem/ITodoItem";
-import handleErrors from "../utilities/errors";
 import { todoItemService } from "../services/TodoItem";
 import { RootState } from "../app/store";
 import { deleteAlert, successAlert } from "../utilities/sweetalert";
 import { ICreateTodoItem } from "../interfaces/TodoItem/ICreateTodoItem";
-import { directoryService } from "../services/directories";
-import { IDirectory } from "../interfaces/Directory/IDirectory";
-import { getDirectoryByUser, updateTodoItem, updateTodoItems } from "./directorySlice";
-import TodoItem from "../components/TodoItem";
+import { updateTodoItem, updateTodoItems } from "./directorySlice";
 import { AxiosError } from "axios";
 import handleHttpErrors from "../utilities/http/handleErrors";
 
@@ -34,6 +30,7 @@ export const createTodoItemByUser = createAsyncThunk<void, ICreateTodoItem>(
   async (todoItem) => {
     try{
       await todoItemService.createTodoItem(todoItem);
+      await successAlert("Task created successfully");
     } catch (err: any) {
       handleHttpErrors(err);
     }
@@ -43,8 +40,15 @@ export const createTodoItemByUser = createAsyncThunk<void, ICreateTodoItem>(
 export const deleteTodoItemById = createAsyncThunk<void, number>(
   "todoItems/deleteTodoItem",
   async (id) => {
+    try{
+      const response = await deleteAlert("Are you sure you want to delete this task?");
+      if (!response.isConfirmed) {
+        return;
+      }
+    }catch (err: any) {}
     try {
       await todoItemService.deleteTodoItem(id);
+      await successAlert("Task deleted successfully");
     }
     catch (err: any) {
       handleHttpErrors(err);
@@ -52,11 +56,22 @@ export const deleteTodoItemById = createAsyncThunk<void, number>(
   }
 );
 
-export const updateTodoItemById = createAsyncThunk<void, Partial<ITodoItem>>(
+export const updateTodoItemById = createAsyncThunk<void, Partial<ITodoItem>, {state: RootState}>(
   "todoItems/updateTodoItem",
-  async (todoItem) => {
+  async (todoItem, {getState, dispatch}) => {
+    const { currentDirectory } = getState().directory;
+    const prevTask = currentDirectory?.todoItem?.find((task) => task.id === todoItem.id); 
+    if (currentDirectory.id !== todoItem.directoryId) {
+      dispatch(
+        updateTodoItem({
+          ...prevTask!,
+          ...todoItem
+        }
+      ));
+    }
     try {
       await todoItemService.updateTodoItem(todoItem.id!, todoItem);
+      await successAlert("Task updated successfully");
     }
     catch (err: any) {
       handleHttpErrors(err);
@@ -71,6 +86,7 @@ export const updateSelected = createAsyncThunk<void, ITodoItem>(
       dispatch(updateTodoItem(todoItem));
       const {notification, ...task} = todoItem
       await todoItemService.updateTodoItem(todoItem.id, task);
+      await successAlert("Task updated successfully");
     } 
     catch (err: any) {
       handleHttpErrors(err);
@@ -92,7 +108,7 @@ export const getTodoItemById = createAsyncThunk<ITodoItem, number>(
 );
 
 export const initiaTaskslState = {
-  currentTodoItem: null as unknown as ITodoItem,
+  currentTodoItem: null as null|ITodoItem,
   status: "idle" as 'idle' | 'loading' | 'succeeded' | 'failed' | "submiteed",
   error: null as Error | AxiosError | null,
 };
@@ -154,6 +170,7 @@ export const todoItemsSlice = createSlice({
       updateTodoItemById.fulfilled,
       (state, action) => {
         state.status = "submiteed";
+        state.currentTodoItem = null;
       }
     ),
     builder.addCase(
@@ -181,6 +198,7 @@ export const todoItemsSlice = createSlice({
       createTodoItemByUser.fulfilled,
       (state, action) => {
         state.status = "submiteed";
+        state.currentTodoItem = null;
       }
     ),
     builder.addCase(
@@ -210,7 +228,6 @@ export const {
   setError,
   resetError,
   setTodoItem,
-  setSearch,
   setNotification,
   reset,
 } = todoItemsSlice.actions;
